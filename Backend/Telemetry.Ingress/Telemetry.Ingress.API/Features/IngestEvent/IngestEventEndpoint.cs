@@ -10,7 +10,6 @@ public static class IngestEventEndpoint
     {
         public void MapIngestEndpoints()
         {
-            // todo: extract later. perhaps think of auto registration
             app.MapPost("events", ProcessEvent)
                 .WithName("IngestTelemetryEvent")
                 .Produces(StatusCodes.Status202Accepted);

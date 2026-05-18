@@ -3,7 +3,7 @@ using System.Text.Json;
 using Telemetry.Ingress.Domain.Events;
 using Telemetry.Ingress.Domain.Interfaces;
 
-namespace Telemetry.Ingress.API.Infrastructure;
+namespace Telemetry.Ingress.API.Infrastructure.MessageBroker;
 
 public class KafkaEventMessageBus : IEventMessageBus, IDisposable
 {
