@@ -10,7 +10,9 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
     private readonly IProducer<string, string> _producer;
     private readonly string _topic = "telemetry-events";
 
-    public KafkaEventMessageBus(IConfiguration configuration)
+    private readonly ILogger<KafkaEventMessageBus> _logger;
+
+    public KafkaEventMessageBus(IConfiguration configuration, ILogger<KafkaEventMessageBus> logger)
     {
         // todo: Options
         var bootstrapServers = configuration["Kafka:BootstrapServers"];
@@ -31,9 +33,10 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
         };
 
         _producer = new ProducerBuilder<string, string>(producerConfig).Build();
+        _logger = logger;
     }
 
-    public async Task PublishAsync(TelemetryEvent @event, CancellationToken cancellationToken)
+    public Task PublishAsync(TelemetryEvent @event, CancellationToken cancellationToken)
     {
         var key = @event.ProjectApiKey;
 
@@ -45,7 +48,16 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
             Value = value
         };
 
-        await _producer.ProduceAsync(_topic, message, cancellationToken);
+        _producer.Produce(_topic, message, deliveryHandler =>
+        {
+            if (deliveryHandler.Error.IsError)
+            {
+                // todo: high-performance logging
+                _logger.LogError("Couldn't deliver message to Kafka. Reason: {reason}", deliveryHandler.Error.Reason);
+            }
+        });
+
+        return Task.CompletedTask;
     }
 
     public void Dispose()
