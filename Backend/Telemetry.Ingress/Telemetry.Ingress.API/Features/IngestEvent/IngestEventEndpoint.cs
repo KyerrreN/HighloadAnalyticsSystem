@@ -12,17 +12,22 @@ public static class IngestEventEndpoint
         {
             app.MapPost("events", ProcessEvent)
                 .WithName("IngestTelemetryEvent")
-                .Produces(StatusCodes.Status202Accepted);
+                .Produces(StatusCodes.Status202Accepted)
+                .Produces(StatusCodes.Status503ServiceUnavailable);
         }
 
-        private static async Task<IResult> ProcessEvent(
+        private static IResult ProcessEvent(
             [FromBody] TelemetryEvent requestBody,
-            IEventMessageBus messageBus,
-            CancellationToken cancellationToken = default)
+            [FromServices] ITelemetryEventChannel channel)
         {
             // todo: validation
+            var isWritten = channel.TryWrite(requestBody);
 
-            await messageBus.PublishAsync(requestBody, cancellationToken);
+            if (!isWritten)
+            {
+                // kafka problems
+                return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+            }
 
             return Results.Accepted();
         }
