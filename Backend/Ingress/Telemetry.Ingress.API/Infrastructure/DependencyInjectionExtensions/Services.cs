@@ -1,5 +1,5 @@
-﻿using Telemetry.Ingress.API.Infrastructure.MessageProcessing;
-using Telemetry.Ingress.Domain.Interfaces;
+﻿using Telemetry.Contracts.Interfaces;
+using Telemetry.Ingress.API.Infrastructure.MessageProcessing;
 
 namespace Telemetry.Ingress.API.Infrastructure.DependencyInjectionExtensions;
 

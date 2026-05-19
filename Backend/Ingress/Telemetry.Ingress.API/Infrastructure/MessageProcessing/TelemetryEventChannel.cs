@@ -1,6 +1,6 @@
 ﻿using System.Threading.Channels;
-using Telemetry.Ingress.Domain.Events;
-using Telemetry.Ingress.Domain.Interfaces;
+using Telemetry.Contracts.Interfaces;
+using Telemetry.Contracts.Events;
 
 namespace Telemetry.Ingress.API.Infrastructure.MessageProcessing;
 

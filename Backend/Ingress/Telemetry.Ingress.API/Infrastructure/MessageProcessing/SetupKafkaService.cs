@@ -19,6 +19,7 @@ public class SetupKafkaService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        // todo: handle failure to start up - perhaps stop an application from starting
         using var adminClient = new AdminClientBuilder(new AdminClientConfig
         {
             BootstrapServers = _options.BootstrapServers,

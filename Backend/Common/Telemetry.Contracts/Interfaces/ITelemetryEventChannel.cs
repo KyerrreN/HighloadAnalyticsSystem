@@ -1,6 +1,6 @@
-﻿using Telemetry.Ingress.Domain.Events;
+﻿using Telemetry.Contracts.Events;
 
-namespace Telemetry.Ingress.Domain.Interfaces;
+namespace Telemetry.Contracts.Interfaces;
 
 /// <summary>
 /// Interface for writing to a Channel, which acts as a message buffer

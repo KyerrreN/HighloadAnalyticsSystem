@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Common/">
+    <Project Path="Common/Telemetry.Contracts/Telemetry.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/Ingress/">
+    <Project Path="Ingress/Telemetry.Ingress.API/Telemetry.Ingress.API.csproj" />
+  </Folder>
+</Solution>

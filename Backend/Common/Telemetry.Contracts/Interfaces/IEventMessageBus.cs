@@ -1,6 +1,6 @@
-﻿using Telemetry.Ingress.Domain.Events;
+﻿using Telemetry.Contracts.Events;
 
-namespace Telemetry.Ingress.Domain.Interfaces;
+namespace Telemetry.Contracts.Interfaces;
 
 /// <summary>
 /// An interface to publish messages
