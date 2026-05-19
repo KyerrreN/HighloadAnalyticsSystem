@@ -1,7 +1,6 @@
 using Asp.Versioning;
+using Telemetry.Ingress.API.Infrastructure.DependencyInjectionExtensions;
 using Telemetry.Ingress.API.Infrastructure.Endpoints;
-using Telemetry.Ingress.API.Infrastructure.MessageProcessing;
-using Telemetry.Ingress.Domain.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,11 +21,8 @@ builder.Services.AddApiVersioning(opt =>
     opt.SubstituteApiVersionInUrl = true;
 });
 
-// Custom services
-builder.Services.AddSingleton<IEventMessageBus, KafkaEventMessageBus>();
-builder.Services.AddSingleton<ITelemetryEventChannel, TelemetryEventChannel>();
-
-builder.Services.AddHostedService<TelemetryPublishWorker>();
+builder.Services.RegisterOptions(builder.Configuration);
+builder.Services.RegisterServices();
 
 // could be overkill, but wouldn't hurt
 builder.Services.Configure<HostOptions>(opt =>

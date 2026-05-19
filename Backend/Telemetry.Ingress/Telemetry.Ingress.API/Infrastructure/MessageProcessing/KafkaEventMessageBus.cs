@@ -1,5 +1,8 @@
 ﻿using Confluent.Kafka;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
+using Telemetry.Ingress.API.Infrastructure.Logging;
+using Telemetry.Ingress.API.Infrastructure.Options;
 using Telemetry.Ingress.Domain.Events;
 using Telemetry.Ingress.Domain.Interfaces;
 
@@ -12,20 +15,13 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
 
     private readonly ILogger<KafkaEventMessageBus> _logger;
 
-    public KafkaEventMessageBus(IConfiguration configuration, ILogger<KafkaEventMessageBus> logger)
+    public KafkaEventMessageBus(IOptions<KafkaOptions> kafkaOptions, ILogger<KafkaEventMessageBus> logger)
     {
-        // todo: Options
-        var bootstrapServers = configuration["Kafka:BootstrapServers"];
-
-        // todo: all configs must be present. Else - don't let an app start up
-        if (string.IsNullOrEmpty(bootstrapServers))
-        {
-            throw new ArgumentNullException(nameof(bootstrapServers), "Error: no config found for bootstrap servers");
-        }
+        var options = kafkaOptions.Value;
 
         var producerConfig = new ProducerConfig
         {
-            BootstrapServers = bootstrapServers,
+            BootstrapServers = options.BootstrapServers,
             // highload optimizations
             Acks = Acks.Leader,
             LingerMs = 5,
@@ -52,8 +48,7 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
         {
             if (deliveryHandler.Error.IsError)
             {
-                // todo: high-performance logging
-                _logger.LogError("Couldn't deliver message to Kafka. Reason: {reason}", deliveryHandler.Error.Reason);
+                _logger.LogKafkaDeliveryError(deliveryHandler.Error.Reason);
             }
         });
 

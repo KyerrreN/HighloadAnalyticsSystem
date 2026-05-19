@@ -1,4 +1,5 @@
-﻿using Telemetry.Ingress.Domain.Interfaces;
+﻿using Telemetry.Ingress.API.Infrastructure.Logging;
+using Telemetry.Ingress.Domain.Interfaces;
 
 namespace Telemetry.Ingress.API.Infrastructure.MessageProcessing;
 
@@ -10,8 +11,7 @@ public class TelemetryPublishWorker(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // todo: high performance logging
-        logger.LogInformation("Background worker for reading a channel has been started");
+        logger.LogBackgroundWorkerStarted();
 
         try
         {
@@ -22,13 +22,11 @@ public class TelemetryPublishWorker(
         }
         catch (OperationCanceledException)
         {
-            // todo: high performance logging
-            logger.LogInformation("Worker's work has been cancelled");
+            logger.LogBackgroundWorkerCancelled();
         }
         catch (Exception ex)
         {
-            // todo: high performance logging
-            logger.LogError(ex, "An error has occured while processing {workerName}", nameof(TelemetryPublishWorker));
+            logger.LogProcessingError(nameof(TelemetryPublishWorker), ex);
         }
     }
 }
