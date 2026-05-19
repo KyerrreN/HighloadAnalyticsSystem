@@ -45,9 +45,9 @@ public class SetupKafkaService : IHostedService
                         ReplicationFactor = (short)replicationFactor
                     }
                 ]);
-
-                _logger.LogKafkaTopicSuccesfullyCreated(topicName);
             }
+
+            _logger.LogKafkaTopicSuccesfullyCreatedOrExists(topicName);
         }
         catch (CreateTopicsException e) when (e.Results[0].Error.Code == ErrorCode.TopicAlreadyExists)
         {

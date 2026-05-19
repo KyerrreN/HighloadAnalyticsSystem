@@ -24,8 +24,8 @@ public static partial class HighPerformanceLogging
     [LoggerMessage(
         EventId = 2003,
         Level = LogLevel.Information,
-        Message = "Kafka topic \"{topicName}\" has been succesfully created")]
-    public static partial void LogKafkaTopicSuccesfullyCreated(this ILogger logger, string topicName);
+        Message = "Kafka topic \"{topicName}\" has been succesfully created, or it already exists")]
+    public static partial void LogKafkaTopicSuccesfullyCreatedOrExists(this ILogger logger, string topicName);
 
     // ERROR
     [LoggerMessage(

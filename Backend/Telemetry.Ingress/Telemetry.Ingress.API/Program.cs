@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Microsoft.AspNetCore.HttpLogging;
 using Telemetry.Ingress.API.Infrastructure.DependencyInjectionExtensions;
 using Telemetry.Ingress.API.Infrastructure.Endpoints;
 
@@ -31,7 +32,19 @@ builder.Services.Configure<HostOptions>(opt =>
     opt.ServicesStopConcurrently = true;
 });
 
+builder.Services.AddHttpLogging(opt =>
+{
+    opt.LoggingFields = HttpLoggingFields.RequestPath
+                        | HttpLoggingFields.RequestMethod
+                        | HttpLoggingFields.ResponseStatusCode
+                        | HttpLoggingFields.Duration;
+
+    opt.CombineLogs = true;
+});
+
 var app = builder.Build();
+
+app.UseHttpLogging();
 
 // Request pipeline
 if (app.Environment.IsDevelopment())
