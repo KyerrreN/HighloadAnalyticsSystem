@@ -1,11 +1,11 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
+using Telemetry.Contracts.Interfaces;
 using Telemetry.Ingress.API.Infrastructure.Logging;
 using Telemetry.Ingress.API.Infrastructure.Observability;
 using Telemetry.Ingress.API.Infrastructure.Options;
-using Telemetry.Ingress.Domain.Events;
-using Telemetry.Ingress.Domain.Interfaces;
+using Telemetry.Contracts.Events;
 
 namespace Telemetry.Ingress.API.Infrastructure.MessageProcessing;
 

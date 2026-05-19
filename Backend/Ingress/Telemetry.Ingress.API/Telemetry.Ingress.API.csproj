@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Telemetry.Ingress.Domain\Telemetry.Ingress.Domain.csproj" />
+    <ProjectReference Include="..\..\Common\Telemetry.Contracts\Telemetry.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

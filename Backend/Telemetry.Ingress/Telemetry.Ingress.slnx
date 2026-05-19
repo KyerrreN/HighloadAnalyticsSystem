@@ -1,4 +1,0 @@
-<Solution>
-  <Project Path="Telemetry.Ingress.API/Telemetry.Ingress.API.csproj" />
-  <Project Path="Telemetry.Ingress.Domain/Telemetry.Ingress.Domain.csproj" />
-</Solution>

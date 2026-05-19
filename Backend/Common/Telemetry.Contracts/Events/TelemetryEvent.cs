@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace Telemetry.Ingress.Domain.Events;
+namespace Telemetry.Contracts.Events;
 
 public record TelemetryEvent(
     Guid EventId,
