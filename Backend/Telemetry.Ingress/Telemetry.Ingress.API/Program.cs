@@ -1,7 +1,10 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.HttpLogging;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
 using Telemetry.Ingress.API.Infrastructure.DependencyInjectionExtensions;
 using Telemetry.Ingress.API.Infrastructure.Endpoints;
+using Telemetry.Ingress.API.Infrastructure.Observability;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +44,17 @@ builder.Services.AddHttpLogging(opt =>
 
     opt.CombineLogs = true;
 });
+
+builder.Services.AddSingleton<IngressMetrics>();
+
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(metrics =>
+    {
+        metrics
+            .AddAspNetCoreInstrumentation()
+            .AddMeter(IngressMetrics.MeterName);
+        // todo: add prometheus
+    });
 
 var app = builder.Build();
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Telemetry.Ingress.API.Infrastructure.Observability;
 using Telemetry.Ingress.Domain.Events;
 using Telemetry.Ingress.Domain.Interfaces;
 
@@ -18,7 +19,8 @@ public static class IngestEventEndpoint
 
         private static IResult ProcessEvent(
             [FromBody] TelemetryEvent requestBody,
-            [FromServices] ITelemetryEventChannel channel)
+            [FromServices] ITelemetryEventChannel channel,
+            [FromServices] IngressMetrics metrics)
         {
             // todo: validation
             var isWritten = channel.TryWrite(requestBody);
@@ -28,6 +30,8 @@ public static class IngestEventEndpoint
                 // kafka problems
                 return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
             }
+
+            metrics.EventsReceivedCounter.Add(1, new KeyValuePair<string, object?>("project_key", requestBody.ProjectApiKey));
 
             return Results.Accepted();
         }

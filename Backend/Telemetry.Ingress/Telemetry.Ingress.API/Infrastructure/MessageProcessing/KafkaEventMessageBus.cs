@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using Telemetry.Ingress.API.Infrastructure.Logging;
+using Telemetry.Ingress.API.Infrastructure.Observability;
 using Telemetry.Ingress.API.Infrastructure.Options;
 using Telemetry.Ingress.Domain.Events;
 using Telemetry.Ingress.Domain.Interfaces;
@@ -14,8 +15,12 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
     private readonly string _topic = "telemetry-events";
 
     private readonly ILogger<KafkaEventMessageBus> _logger;
+    private readonly IngressMetrics _metrics;
 
-    public KafkaEventMessageBus(IOptions<KafkaOptions> kafkaOptions, ILogger<KafkaEventMessageBus> logger)
+    public KafkaEventMessageBus(
+        IOptions<KafkaOptions> kafkaOptions, 
+        ILogger<KafkaEventMessageBus> logger, 
+        IngressMetrics metrics)
     {
         var options = kafkaOptions.Value;
 
@@ -30,6 +35,7 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
 
         _producer = new ProducerBuilder<string, string>(producerConfig).Build();
         _logger = logger;
+        _metrics = metrics;
     }
 
     public Task PublishAsync(TelemetryEvent @event, CancellationToken cancellationToken)
@@ -49,6 +55,8 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
             if (deliveryHandler.Error.IsError)
             {
                 _logger.LogKafkaDeliveryError(deliveryHandler.Error.Reason);
+
+                _metrics.KafkaErrorsCounter.Add(1, new KeyValuePair<string, object?>("reason", deliveryHandler.Error.Reason));
             }
         });
 
