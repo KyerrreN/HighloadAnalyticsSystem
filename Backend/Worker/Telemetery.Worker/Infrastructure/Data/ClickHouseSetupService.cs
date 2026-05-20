@@ -1,35 +1,37 @@
 ﻿using ClickHouse.Client.ADO;
+using Microsoft.Extensions.Options;
 using System.Data.Common;
+using Telemetry.Worker.Infrastructure.Observability.Logging;
+using Telemetry.Worker.Infrastructure.Options;
 
 namespace Telemetry.Worker.Infrastructure.Data;
 
 public class ClickHouseSetupService : IHostedService
 {
-    private readonly string _connectionString;
+    private readonly ClickHouseOptions _options;
     private readonly ILogger<ClickHouseSetupService> _logger;
 
-    public ClickHouseSetupService(IConfiguration configuration, ILogger<ClickHouseSetupService> logger)
+    public ClickHouseSetupService(
+        IOptions<ClickHouseOptions> options, 
+        ILogger<ClickHouseSetupService> logger)
     {
-        _connectionString = configuration.GetConnectionString("ClickHouse")
-            ?? throw new ArgumentNullException(nameof(_connectionString), "ClickHouse connection string is missing"); // todo: resolve, perhaps options
-
+        _options = options.Value;
         _logger = logger;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        // todo: high-performance logging
-        _logger.LogInformation("Checking and initializing ClickHouse...");
+        _logger.LogInitializingClickHouse();
 
         try
         {
-            using DbConnection connection = new ClickHouseConnection(_connectionString);
+            using DbConnection connection = new ClickHouseConnection(_options.ConnectionString);
             await connection.OpenAsync(cancellationToken);
 
             using DbCommand command = connection.CreateCommand();
 
-            command.CommandText = @"
-                CREATE TABLE IF NOT EXISTS telemetry_events
+            command.CommandText = $@"
+                CREATE TABLE IF NOT EXISTS {_options.TableName}
                 (
                     ProjectApiKey String,
                     Timestamp DateTime64(3, 'UTC'),
@@ -46,13 +48,11 @@ public class ClickHouseSetupService : IHostedService
 
             await command.ExecuteNonQueryAsync(cancellationToken);
 
-            // todo: high-performance logging
-            _logger.LogInformation("ClickHouse's scheme is initialized succesfully");
+            _logger.LogClickHouseInitialized();
         }
         catch (Exception ex)
         {
-            // todo: high-performance logging
-            _logger.LogCritical(ex, "FATAL: Couldn't initialize ClickHouse schema. Check DB Connection or ConnectionString");
+            _logger.LogClickHouseInitializationFailed(ex);
             throw;
         }
     }

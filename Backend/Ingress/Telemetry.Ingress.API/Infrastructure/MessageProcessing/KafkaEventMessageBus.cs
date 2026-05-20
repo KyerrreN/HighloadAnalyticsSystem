@@ -1,11 +1,11 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
+using Telemetry.Contracts.Events;
 using Telemetry.Contracts.Interfaces;
 using Telemetry.Ingress.API.Infrastructure.Logging;
 using Telemetry.Ingress.API.Infrastructure.Observability;
 using Telemetry.Ingress.API.Infrastructure.Options;
-using Telemetry.Contracts.Events;
 
 namespace Telemetry.Ingress.API.Infrastructure.MessageProcessing;
 
@@ -54,7 +54,7 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
         {
             if (deliveryHandler.Error.IsError)
             {
-                _logger.LogKafkaDeliveryError(deliveryHandler.Error.Reason);
+                _logger.LogDeliveryError(deliveryHandler.Error.Reason);
 
                 _metrics.KafkaErrorsCounter.Add(1, new KeyValuePair<string, object?>("reason", deliveryHandler.Error.Reason));
             }

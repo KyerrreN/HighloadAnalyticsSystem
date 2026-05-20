@@ -35,7 +35,7 @@ public class SetupKafkaService : IHostedService
 
             if (!metadata.Topics.Exists(t => t.Topic == topicName))
             {
-                _logger.LogKafkaTopicNotExist();
+                _logger.LogTopicNotExist();
 
                 await adminClient.CreateTopicsAsync(
                 [
@@ -48,15 +48,15 @@ public class SetupKafkaService : IHostedService
                 ]);
             }
 
-            _logger.LogKafkaTopicSuccesfullyCreatedOrExists(topicName);
+            _logger.LogTopicCreatedOrExists(topicName);
         }
         catch (CreateTopicsException e) when (e.Results[0].Error.Code == ErrorCode.TopicAlreadyExists)
         {
-            _logger.LogKafkaTopicAlreadyExist(topicName);
+            _logger.LogTopicAlreadyExists(topicName);
         }
         catch (Exception e)
         {
-            _logger.LogKafkaTopicUnknownCreationError(topicName, e);
+            _logger.LogTopicUnknownCreationError(topicName, e);
         }
     }
 

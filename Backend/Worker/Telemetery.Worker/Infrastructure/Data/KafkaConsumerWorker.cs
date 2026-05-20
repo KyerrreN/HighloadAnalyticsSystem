@@ -1,31 +1,30 @@
-﻿using ClickHouse.Client.ADO;
-using ClickHouse.Client.Copy;
-using Confluent.Kafka;
+﻿using Confluent.Kafka;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using Telemetry.Worker.Infrastructure.Options;
 using Telemetry.Contracts.Events;
+using Telemetry.Worker.Infrastructure.Data.Interfaces;
+using Telemetry.Worker.Infrastructure.Observability.Logging;
 
 namespace Telemetry.Worker.Infrastructure.Data;
 
 public class KafkaConsumerWorker : BackgroundService
 {
     private readonly KafkaOptions _kafkaOptions;
+    private readonly BatchingOptions _batchingOptions;
+    private readonly ITelemetrySink _sink;
     private readonly ILogger<KafkaConsumerWorker> _logger;
 
-    // todo: options
-    private readonly IConfiguration _configuration;
-
-    private const int batchSize = 10_000;
-
     public KafkaConsumerWorker(
-        IOptions<KafkaOptions> options, 
+        IOptions<KafkaOptions> options,
         ILogger<KafkaConsumerWorker> logger,
-        IConfiguration configuration)
+        IOptions<BatchingOptions> batchingOptions,
+        ITelemetrySink sink)
     {
         _kafkaOptions = options.Value;
         _logger = logger;
-        _configuration = configuration;
+        _batchingOptions = batchingOptions.Value;
+        _sink = sink;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -38,25 +37,16 @@ public class KafkaConsumerWorker : BackgroundService
             EnableAutoCommit = false,
         };
 
-        var topic = _kafkaOptions.TopicName;
-
         using var consumer = new ConsumerBuilder<Ignore, string>(consumerConfig)
-            //.SetErrorHandler((_, e) => _logger.LogError("KAFKA ERROR: {Reason}", e.Reason))
-            //.SetLogHandler((_, log) => _logger.LogInformation("KAFKA INTERNAL [{Facility}]: {Message}", log.Facility, log.Message))
             .SetPartitionsAssignedHandler((c, partitions) =>
-            // todo: high-performance loggings
-                _logger.LogInformation("Available partitions: {partitions}", string.Join(", ", partitions.Select(p => p.Partition.Value))))
+                _logger.LogPartitionsAssigned(string.Join(", ", partitions.Select(p => p.Partition.Value))))
             .Build();
-        consumer.Subscribe(topic);
+        
+        consumer.Subscribe(_kafkaOptions.TopicName);
+        _logger.LogSubscribedToTopic(_kafkaOptions.TopicName);
 
-        // todo: high performance logging
-        _logger.LogInformation("Succesfully subscribed to topic {topic}. Awaiting messages...", topic);
-
-        // todo: does it make sense to move it to configurations?
-        var batch = new List<TelemetryEvent>(batchSize);
-        var maxWaitTime = TimeSpan.FromSeconds(5);
+        var batch = new List<TelemetryEvent>(_batchingOptions.MaxBatchSize);
         var lastFlushTime = DateTime.UtcNow;
-
         ConsumeResult<Ignore, string>? lastConsumeResult = null;
 
         // necessary to not block the thread
@@ -81,55 +71,24 @@ public class KafkaConsumerWorker : BackgroundService
                             lastConsumeResult = consumeResult;
                         }
                     }
-                    catch (ConsumeException ex)
-                    {
-                        _logger.LogError("FATAL KAFKA CONSUME EXCEPTION: {Reason}. Offset: {Offset}", ex.Error.Reason, ex.ConsumerRecord?.Offset);
-                    }
                     catch (JsonException ex)
                     {
-                        // todo: high-performance logging
-                        _logger.LogError(ex, "Error deserializing message from Kafka.");
+                        _logger.LogDeserializationError(ex);
                     }
                 }
 
-                bool isBatchFull = batch.Count >= batchSize;
-                bool isTimeUp = (DateTime.UtcNow - lastFlushTime) >= maxWaitTime && batch.Count > 0;
+                bool isBatchFull = batch.Count >= _batchingOptions.MaxBatchSize;
+                bool isTimeUp = (DateTime.UtcNow - lastFlushTime) >= _batchingOptions.MaxWaitTime && batch.Count > 0;
 
                 if (isBatchFull || isTimeUp)
                 {
                     string reason = isBatchFull ? "Hit batch limit" : "Timeout";
 
-                    // todo: high-performance logging
-                    _logger.LogInformation("Flushing batch of {count} messages. Reason: {reason}", batch.Count, reason);
+                    _logger.LogFlushingBatch(batch.Count, reason);
 
-                    // todo: bulk insert
-                    // todo: high-performance logging
                     try
                     {
-                        var rows = batch.Select(e => new object[]
-                        {
-                            e.ProjectApiKey,
-                            e.Timestamp,
-                            e.EventId.ToString(),
-                            e.EventName,
-                            e.ActorId ?? "",
-                            e.SessionId ?? "",
-                            e.Properties.ValueKind != JsonValueKind.Undefined ? e.Properties.GetRawText() : "{}"
-                        }).ToList();
-
-                        var connectionString = _configuration.GetConnectionString("ClickHouse");
-                        using var connection = new ClickHouseConnection(connectionString);
-                        await connection.OpenAsync(stoppingToken);
-
-                        using var bulkCopy = new ClickHouseBulkCopy(connection)
-                        {
-                            // todo: options
-                            DestinationTableName = "telemetry_events",
-                            BatchSize = batch.Count,
-                        };
-
-                        await bulkCopy.InitAsync();
-                        await bulkCopy.WriteToServerAsync(rows, stoppingToken);
+                        await _sink.SaveBatchAsync(batch, stoppingToken);
 
                         if (lastConsumeResult is not null)
                         {
@@ -140,13 +99,11 @@ public class KafkaConsumerWorker : BackgroundService
                         batch.Clear();
                         lastFlushTime = DateTime.UtcNow;
 
-                        // todo: high-performance logging
-                        _logger.LogInformation("Batch succesfully saved to ClickHouse and commited to Kafka");
+                        _logger.LogBatchSaved();
                     }
                     catch (Exception ex)
                     {
-                        // todo: high-performance logging
-                        _logger.LogError(ex, "Failed to flush batch to ClickHouse. Retrying...");
+                        _logger.LogSinkFlushError(ex);
 
                         await Task.Delay(2000, stoppingToken);
                     }
@@ -155,14 +112,12 @@ public class KafkaConsumerWorker : BackgroundService
         }
         catch (OperationCanceledException)
         {
-            // todo: high-performance logging
-            _logger.LogInformation("Caught stopping signal. Stopping...");
+            _logger.LogStopping();
         }
         finally
         {
             consumer.Close();
-            // todo: high-performance logging
-            _logger.LogInformation("Disconnected from Kafka");
+            _logger.LogDisconnected();
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using Telemetry.Contracts.Interfaces;
-using Telemetry.Ingress.API.Infrastructure.Logging;
+using Telemetry.Ingress.API.Infrastructure.Observability.HighPerformanceLogging;
 
 namespace Telemetry.Ingress.API.Infrastructure.MessageProcessing;
 
@@ -11,7 +11,7 @@ public class TelemetryPublishWorker(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.LogBackgroundWorkerStarted();
+        logger.LogStarted();
 
         try
         {
@@ -22,7 +22,7 @@ public class TelemetryPublishWorker(
         }
         catch (OperationCanceledException)
         {
-            logger.LogBackgroundWorkerCancelled();
+            logger.LogCancelled();
         }
         catch (Exception ex)
         {
