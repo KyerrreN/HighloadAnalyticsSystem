@@ -4,7 +4,7 @@ import { check } from "k6";
 export const options = {
   stages: [
     { duration: "10s", target: 500 },
-    { duration: "30s", target: 500 },
+    { duration: "500s", target: 500 },
     { duration: "10s", target: 0 },
   ],
   thresholds: {
