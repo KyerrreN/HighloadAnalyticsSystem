@@ -12,21 +12,20 @@ namespace Telemetry.Ingress.API.Infrastructure.MessageProcessing;
 public class KafkaEventMessageBus : IEventMessageBus, IDisposable
 {
     private readonly IProducer<string, string> _producer;
-    private readonly string _topic = "telemetry-events";
-
     private readonly ILogger<KafkaEventMessageBus> _logger;
     private readonly IngressMetrics _metrics;
+    private readonly KafkaOptions _options;
 
     public KafkaEventMessageBus(
         IOptions<KafkaOptions> kafkaOptions, 
         ILogger<KafkaEventMessageBus> logger, 
         IngressMetrics metrics)
     {
-        var options = kafkaOptions.Value;
+        _options = kafkaOptions.Value;
 
         var producerConfig = new ProducerConfig
         {
-            BootstrapServers = options.BootstrapServers,
+            BootstrapServers = _options.BootstrapServers,
             // highload optimizations
             Acks = Acks.Leader,
             LingerMs = 5,
@@ -40,7 +39,9 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
 
     public Task PublishAsync(TelemetryEvent @event, CancellationToken cancellationToken)
     {
-        var key = @event.ProjectApiKey;
+        var key = !string.IsNullOrWhiteSpace(@event.SessionId) ? @event.SessionId :
+                  !string.IsNullOrWhiteSpace(@event.ActorId) ? @event.ActorId :
+                  @event.ProjectApiKey;
 
         var value = JsonSerializer.Serialize(@event);
 
@@ -50,7 +51,7 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
             Value = value
         };
 
-        _producer.Produce(_topic, message, deliveryHandler =>
+        _producer.Produce(_options.TopicName, message, deliveryHandler =>
         {
             if (deliveryHandler.Error.IsError)
             {
