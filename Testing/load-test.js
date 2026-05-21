@@ -32,7 +32,7 @@ export default function () {
     projectApiKey: "prod-live-key-777",
     timestamp: new Date().toISOString(),
     eventName: "AppHeartbeat",
-    userId: "user-active-111",
+    actorId: "user-active-111",
     sessionId: "session-xyz",
     properties: { os: "Android", app_version: "2.4.1" },
   });

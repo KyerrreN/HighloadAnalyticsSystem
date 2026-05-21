@@ -1,0 +1,11 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\Backend",
+    "\\Backend\\Ingress",
+    "\\Backend\\Ingress\\Telemetry.Ingress.API",
+    "\\Backend\\Worker"
+  ],
+  "SelectedNode": "\\Backend\\Ingress\\Telemetry.Ingress.API",
+  "PreviewInSolutionExplorer": false
+}

@@ -5,4 +5,7 @@
   <Folder Name="/Ingress/">
     <Project Path="Ingress/Telemetry.Ingress.API/Telemetry.Ingress.API.csproj" />
   </Folder>
+  <Folder Name="/Worker/">
+    <Project Path="Worker/Telemetery.Worker/Telemetry.Worker.csproj" Id="9263737a-0aa1-4a46-b40a-92b9c61444fe" />
+  </Folder>
 </Solution>

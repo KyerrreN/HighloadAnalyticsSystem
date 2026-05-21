@@ -3,7 +3,7 @@
 namespace Telemetry.Contracts.Interfaces;
 
 /// <summary>
-/// An interface to publish messages
+/// An interface to publish TelemetryEvent messages
 /// </summary>
 public interface IEventMessageBus
 {
