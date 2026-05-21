@@ -24,17 +24,46 @@ export const options = {
   },
 };
 
+function generateUUID() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export default function () {
   const url = "http://localhost:5209/api/v1/events";
 
+  const totalUniqueUsers = 50000;
+  const randomActorNum = Math.floor(Math.random() * totalUniqueUsers);
+  const actorId = `user-${randomActorNum}`;
+
+  const randomSessionNum = Math.floor(Math.random() * 200000);
+  const sessionId = `sess-${randomSessionNum}`;
+
+  const eventTypes = [
+    "AppHeartbeat",
+    "PageView",
+    "ButtonClick",
+    "CheckoutStarted",
+    "OrderPlaced",
+  ];
+  const eventName = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+
+  const osType = Math.random() > 0.5 ? "Android" : "iOS";
+
   const payload = JSON.stringify({
-    eventId: "77a85f64-5117-4562-b3fc-2c963f66afa6",
+    eventId: generateUUID(),
     projectApiKey: "prod-live-key-777",
     timestamp: new Date().toISOString(),
-    eventName: "AppHeartbeat",
-    actorId: "user-active-111",
-    sessionId: "session-xyz",
-    properties: { os: "Android", app_version: "2.4.1" },
+    eventName: eventName,
+    actorId: actorId,
+    sessionId: sessionId,
+    properties: {
+      os: osType,
+      app_version: "2.4.1",
+    },
   });
 
   const params = {

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Telemetry.Worker.Infrastructure.Options;
+namespace Telemetry.Read.CrossCuttingConcerns.Options;
 
 public class ClickHouseOptions
 {
@@ -8,7 +8,4 @@ public class ClickHouseOptions
 
     [Required(AllowEmptyStrings = false, ErrorMessage = $"\"{nameof(ConnectionString)}\" config is not present in configuration section \"{SectionName}\"")]
     public required string ConnectionString { get; set; }
-
-    [Required(AllowEmptyStrings = false)]
-    public string TableName { get; set; } = "telemetry_events";
 }

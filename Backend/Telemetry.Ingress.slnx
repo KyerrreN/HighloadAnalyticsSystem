@@ -5,6 +5,10 @@
   <Folder Name="/Ingress/">
     <Project Path="Ingress/Telemetry.Ingress.API/Telemetry.Ingress.API.csproj" />
   </Folder>
+  <Folder Name="/Read/">
+    <Project Path="Read/Telemetry.Read.API/Telemetry.Read.API.csproj" Id="e81fa4a1-705a-4702-9d37-bc984dd0fddd" />
+    <Project Path="Read/Telemetry.Read.CrossCuttingConcerns/Telemetry.Read.CrossCuttingConcerns.csproj" Id="560bbfee-b092-474c-b244-a54d5c2aac61" />
+  </Folder>
   <Folder Name="/Worker/">
     <Project Path="Worker/Telemetery.Worker/Telemetry.Worker.csproj" Id="9263737a-0aa1-4a46-b40a-92b9c61444fe" />
   </Folder>
