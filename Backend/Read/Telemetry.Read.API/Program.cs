@@ -8,7 +8,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.RegisterOptions(builder.Configuration);
 builder.Services.AddDistributedMemoryCache();
 
-builder.Services.AddQueryPipeline();
+builder.Services.AddQueryPipeline(typeof(Program).Assembly);
+
+builder.Services.RegisterCustomServices();
+builder.Services.AddSingleton(TimeProvider.System);
 
 var app = builder.Build();
 

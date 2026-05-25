@@ -1,52 +1,37 @@
-﻿using ClickHouse.Client.ADO;
-using ClickHouse.Client.Utility;
-using Microsoft.Extensions.Options;
+﻿using Telemetry.Read.API.Features.GetDailyMontlyActiveUsers.Data;
 using Telemetry.Read.CrossCuttingConcerns.Abstractions;
-using Telemetry.Read.CrossCuttingConcerns.Options;
 
 namespace Telemetry.Read.API.Features.GetDailyMontlyActiveUsers;
 
 public class GetDauMauHandler : IQueryHandler<GetDauMauQuery, List<DauMauResponse>>
 {
-    private readonly ClickHouseOptions _clickHouseOptions;
+    private readonly TimeProvider _timeProvider;
+    private readonly IDauMauDataSource _dataSource;
 
-    public GetDauMauHandler(IOptions<ClickHouseOptions> clickHouseOptions)
+    public GetDauMauHandler(TimeProvider timeProvider, IDauMauDataSource dataSource)
     {
-        _clickHouseOptions = clickHouseOptions.Value;
+        _timeProvider = timeProvider;
+        _dataSource = dataSource;
     }
 
     public async Task<List<DauMauResponse>> HandleAsync(GetDauMauQuery query, CancellationToken cancellationToken)
     {
+        var actualTo = query.To.HasValue
+            ? query.To.Value.Date.AddDays(1).AddTicks(-1)
+            : _timeProvider.GetUtcNow().UtcDateTime;
+
+        var sparseData = await _dataSource.GetSparseDataAsync(
+            query.ProjectApiKey,
+            query.From,
+            actualTo,
+            cancellationToken);
+
         var result = new List<DauMauResponse>();
 
-        using var connection = new ClickHouseConnection(_clickHouseOptions.ConnectionString);
-        await connection.OpenAsync(cancellationToken);
-
-        using var command = connection.CreateCommand();
-        command.CommandText = """
-            SELECT 
-                toStartOfDay(Timestamp) AS Date,
-                uniqExact(ActorId) AS UniqueUsers
-            FROM telemetry_events
-            WHERE ProjectApiKey = @apiKey 
-              AND Timestamp >= @from 
-              AND Timestamp <= @to
-            GROUP BY Date
-            ORDER BY Date ASC
-            """;
-
-        command.AddParameter("apiKey", query.ProjectApiKey);
-        command.AddParameter("from", query.From);
-        command.AddParameter("to", query.To);
-
-        using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        while (await reader.ReadAsync(cancellationToken))
+        for (var currentDay = query.From.Date; currentDay <= actualTo.Date; currentDay = currentDay.AddDays(1))
         {
-            var date = reader.GetDateTime(0);
-
-            var uniqueUsers = Convert.ToInt64(reader.GetValue(1));
-
-            result.Add(new DauMauResponse(date, uniqueUsers));
+            var usersCount = sparseData.TryGetValue(currentDay, out var count) ? count : 0;
+            result.Add(new DauMauResponse(currentDay, usersCount));
         }
 
         return result;
