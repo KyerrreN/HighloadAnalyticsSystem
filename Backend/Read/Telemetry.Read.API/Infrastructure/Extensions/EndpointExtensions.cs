@@ -21,7 +21,6 @@ public static class EndpointExtensions
 
             foreach (var group in groupedEndpoints)
             {
-                // todo: fuck we need that for?
                 var versionPrefix = group.Key.Version.StartsWith('v') ? group.Key.Version : $"v{group.Key.Version}";
 
                 var groupRoutePattern = $"/api/{versionPrefix}/{group.Key.Group}";
