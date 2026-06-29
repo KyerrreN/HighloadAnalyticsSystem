@@ -26,12 +26,11 @@ public static class IngestEventEndpoint
 
                 if (!isWritten)
                 {
-                    // kafka problems
+                    // kafka problems, channel overflow
                     return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
                 }
 
-                // todo
-                //metrics.EventsReceivedCounter.Add(1, new KeyValuePair<string, object?>("project_key", requestBody.ProjectApiKey));
+                metrics.EventsReceivedCounter.Add(1, new KeyValuePair<string, object?>("project_key", requestBody.ProjectApiKey));
 
                 return Results.Accepted();
             })

@@ -19,9 +19,8 @@ public static class OtelExtensions
                 {
                     metrics
                         .AddAspNetCoreInstrumentation()
-                        .AddMeter(IngressMetrics.MeterName);
-
-                    // todo: add prometheus
+                        .AddMeter(IngressMetrics.MeterName)
+                        .AddOtlpExporter();
                 })
                 .WithTracing(tracing =>
                 {
