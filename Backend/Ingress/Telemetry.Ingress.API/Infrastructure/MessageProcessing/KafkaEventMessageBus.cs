@@ -1,10 +1,13 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.Options;
+using OpenTelemetry.Context.Propagation;
+using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using Telemetry.Contracts.Events;
 using Telemetry.Contracts.Interfaces;
 using Telemetry.Ingress.API.Infrastructure.Logging;
-using Telemetry.Ingress.API.Infrastructure.Observability;
+using Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 using Telemetry.Ingress.API.Infrastructure.Options;
 
 namespace Telemetry.Ingress.API.Infrastructure.MessageProcessing;
@@ -15,6 +18,11 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
     private readonly ILogger<KafkaEventMessageBus> _logger;
     private readonly IngressMetrics _metrics;
     private readonly KafkaOptions _options;
+    private readonly Action<Headers, string, string> SetHeaders = (headers, key, value) =>
+    {
+        headers.Remove(key); // avoid duplicates
+        headers.Add(key, Encoding.UTF8.GetBytes(value));
+    };
 
     public KafkaEventMessageBus(
         IOptions<KafkaOptions> kafkaOptions, 
@@ -37,18 +45,25 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
         _metrics = metrics;
     }
 
-    public Task PublishAsync(TelemetryEvent @event, CancellationToken cancellationToken)
+    public Task PublishAsync(TelemetryEvent @event, ActivityContext traceContext, CancellationToken cancellationToken)
     {
+        // construct message key/value
         var key = !string.IsNullOrWhiteSpace(@event.SessionId) ? @event.SessionId :
                   !string.IsNullOrWhiteSpace(@event.ActorId) ? @event.ActorId :
                   @event.ProjectApiKey;
 
         var value = JsonSerializer.Serialize(@event);
 
+        // construct headers
+        var headers = new Headers();
+        var propagationContext = new PropagationContext(traceContext, default);
+        Propagators.DefaultTextMapPropagator.Inject(propagationContext, headers, SetHeaders);
+
         var message = new Message<string, string>
         {
             Key = key,
-            Value = value
+            Value = value,
+            Headers = headers
         };
 
         _producer.Produce(_options.TopicName, message, deliveryHandler =>

@@ -33,7 +33,7 @@ function generateUUID() {
 }
 
 export default function () {
-  const url = "http://localhost:5209/api/v1/events";
+  const url = "https://localhost:7140/api/v1/events";
 
   const totalUniqueUsers = 50000;
   const randomActorNum = Math.floor(Math.random() * totalUniqueUsers);

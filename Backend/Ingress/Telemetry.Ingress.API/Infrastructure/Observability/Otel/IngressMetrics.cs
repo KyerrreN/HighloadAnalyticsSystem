@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.Metrics;
 
-namespace Telemetry.Ingress.API.Infrastructure.Observability;
+namespace Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 
 public class IngressMetrics
 {

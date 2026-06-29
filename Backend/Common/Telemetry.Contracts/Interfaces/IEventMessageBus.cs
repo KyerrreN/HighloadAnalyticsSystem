@@ -1,4 +1,5 @@
-﻿using Telemetry.Contracts.Events;
+﻿using System.Diagnostics;
+using Telemetry.Contracts.Events;
 
 namespace Telemetry.Contracts.Interfaces;
 
@@ -7,5 +8,5 @@ namespace Telemetry.Contracts.Interfaces;
 /// </summary>
 public interface IEventMessageBus
 {
-    Task PublishAsync(TelemetryEvent @event, CancellationToken cancellationToken);
+    Task PublishAsync(TelemetryEvent @event, ActivityContext traceContext, CancellationToken cancellationToken);
 }
