@@ -20,15 +20,25 @@ public class TelemetryPublishWorker(
         {
             await foreach (var envelope in channel.ReadAllAsync(stoppingToken))
             {
-                using var activity = ActivitySource.StartActivity(
-                    "Kafka Publish Event",
-                    ActivityKind.Producer,
-                    envelope.TraceContext);
+                try
+                {
+                    using var activity = ActivitySource.StartActivity(
+                        "Kafka Publish Event",
+                        ActivityKind.Producer,
+                        envelope.TraceContext);
 
-                activity?.SetTag("messaging.system", "kafka");
-                activity?.SetTag("telemetry.event_name", envelope.Payload.EventName);
+                    activity?.SetTag("messaging.system", "kafka");
+                    activity?.SetTag("telemetry.event_name", envelope.Payload.EventName);
 
-                await messageBus.PublishAsync(envelope.Payload, envelope.TraceContext, stoppingToken);
+                    await messageBus.PublishAsync(envelope.Payload, envelope.TraceContext, stoppingToken);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    logger.LogProcessingError(nameof(TelemetryPublishWorker), ex);
+
+                    // todo: perhaps retry policy?
+                    await Task.Delay(1000, stoppingToken);
+                }
             }
         }
         catch (OperationCanceledException)
