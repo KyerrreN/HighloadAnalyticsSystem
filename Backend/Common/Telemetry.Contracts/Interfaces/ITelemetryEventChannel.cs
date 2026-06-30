@@ -8,6 +8,11 @@ namespace Telemetry.Contracts.Interfaces;
 public interface ITelemetryEventChannel
 {
     /// <summary>
+    /// Count of messages currently residing in a channel
+    /// </summary>
+    public int Count { get; }
+
+    /// <summary>
     /// Try writing to a channel
     /// </summary>
     /// <param name="event"></param>

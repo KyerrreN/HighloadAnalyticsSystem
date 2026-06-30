@@ -72,7 +72,7 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
             {
                 _logger.LogDeliveryError(deliveryHandler.Error.Reason);
 
-                _metrics.KafkaErrorsCounter.Add(1, new KeyValuePair<string, object?>("reason", deliveryHandler.Error.Reason));
+                _metrics.RecordKafkaError(_options.TopicName, deliveryHandler.Error.Reason);
             }
         });
 

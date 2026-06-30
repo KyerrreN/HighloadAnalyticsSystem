@@ -19,7 +19,6 @@ public static class IngestEventEndpoint
             {
                 // todo: validation
                 var activityContext = Activity.Current?.Context ?? default;
-
                 var envelope = new EnvelopedEvent(requestBody, activityContext);
 
                 var isWritten = channel.TryWrite(envelope);
@@ -27,10 +26,11 @@ public static class IngestEventEndpoint
                 if (!isWritten)
                 {
                     // kafka problems, channel overflow
+                    metrics.RecordChannelRejected();
                     return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
                 }
 
-                metrics.EventsReceivedCounter.Add(1, new KeyValuePair<string, object?>("project_key", requestBody.ProjectApiKey));
+                metrics.RecordEventsReceived();
 
                 return Results.Accepted();
             })
