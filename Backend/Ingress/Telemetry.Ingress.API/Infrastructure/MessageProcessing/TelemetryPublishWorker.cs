@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Confluent.Kafka;
+using System.Diagnostics;
 using Telemetry.Contracts.Interfaces;
 using Telemetry.Ingress.API.Infrastructure.Observability.HighPerformanceLogging;
 
@@ -20,24 +21,33 @@ public class TelemetryPublishWorker(
         {
             await foreach (var envelope in channel.ReadAllAsync(stoppingToken))
             {
-                try
+                bool isPublished = false;
+
+                while (!isPublished && !stoppingToken.IsCancellationRequested)
                 {
-                    using var activity = ActivitySource.StartActivity(
-                        "Kafka Publish Event",
-                        ActivityKind.Producer,
-                        envelope.TraceContext);
+                    try
+                    {
+                        using var activity = ActivitySource.StartActivity(
+                            "Kafka Publish Event",
+                            ActivityKind.Producer,
+                            envelope.TraceContext);
 
-                    activity?.SetTag("messaging.system", "kafka");
-                    activity?.SetTag("telemetry.event_name", envelope.Payload.EventName);
+                        activity?.SetTag("messaging.system", "kafka");
+                        activity?.SetTag("telemetry.event_name", envelope.Payload.EventName);
 
-                    await messageBus.PublishAsync(envelope.Payload, envelope.TraceContext, stoppingToken);
-                }
-                catch (Exception ex) when (ex is not OperationCanceledException)
-                {
-                    logger.LogProcessingError(nameof(TelemetryPublishWorker), ex);
+                        await messageBus.PublishAsync(envelope.Payload, envelope.TraceContext, stoppingToken);
 
-                    // todo: perhaps retry policy?
-                    await Task.Delay(1000, stoppingToken);
+                        isPublished = true;
+                    }
+                    catch (ProduceException<string, string> ex) when (ex.Error.Code == ErrorCode.Local_QueueFull)
+                    {
+                        await Task.Delay(100, stoppingToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogProcessingError(nameof(TelemetryPublishWorker), ex);
+                        break;
+                    }
                 }
             }
         }

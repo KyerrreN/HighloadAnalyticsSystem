@@ -3,6 +3,11 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     container_name: kafka
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1536M
     ports:
       - "9092:9092"
     environment:
@@ -42,6 +47,11 @@ services:
     ports:
       - "8123:8123"
       - "9000:9000"
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 2048M
     environment:
       - CLICKHOUSE_USER=admin
       - CLICKHOUSE_PASSWORD=SuperCoolPassword123!
@@ -49,25 +59,48 @@ services:
       - TZ=UTC
     volumes:
       - clickhouse_data:/var/lib/clickhouse
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "clickhouse-client",
+          "--user",
+          "admin",
+          "--password",
+          "SuperCoolPassword123!",
+          "-q",
+          "SELECT 1",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     container_name: otel-collector
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
     ports:
       - "4317:4317"
     depends_on:
-      - jaeger
+      - tempo
 
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    container_name: jaeger
-    environment:
-      - COLLECTOR_OTLP_ENABLED=true
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml
+      - tempo_data:/tmp/tempo
     ports:
-      - "16686:16686"
-      - "4317"
+      - "3200:3200"
+    user: root # todo: security violation, fix when dealing with security
 
   prometheus:
     image: prom/prometheus:latest
@@ -78,6 +111,13 @@ services:
       - "9090:9090"
     depends_on:
       - otel-collector
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
 
   grafana:
     image: grafana/grafana:latest
@@ -91,3 +131,4 @@ services:
 volumes:
   kafka_data:
   clickhouse_data:
+  tempo_data:
