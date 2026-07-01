@@ -47,7 +47,6 @@ public class KafkaConsumerWorker : BackgroundService
 
         var batch = new List<TelemetryEvent>(_batchingOptions.MaxBatchSize);
         var lastFlushTime = DateTime.UtcNow;
-        ConsumeResult<Ignore, string>? lastConsumeResult = null;
 
         // necessary to not block the thread
         await Task.Yield();
@@ -67,8 +66,6 @@ public class KafkaConsumerWorker : BackgroundService
                         if (telemeteryEvent is not null)
                         {
                             batch.Add(telemeteryEvent);
-
-                            lastConsumeResult = consumeResult;
                         }
                     }
                     catch (JsonException ex)
@@ -90,11 +87,7 @@ public class KafkaConsumerWorker : BackgroundService
                     {
                         await _sink.SaveBatchAsync(batch, stoppingToken);
 
-                        if (lastConsumeResult is not null)
-                        {
-                            consumer.Commit(lastConsumeResult);
-                            lastConsumeResult = null;
-                        }
+                        consumer.Commit();
 
                         batch.Clear();
                         lastFlushTime = DateTime.UtcNow;
@@ -105,7 +98,7 @@ public class KafkaConsumerWorker : BackgroundService
                     {
                         _logger.LogSinkFlushError(ex);
 
-                        await Task.Delay(2000, stoppingToken);
+                        await Task.Delay(2000, stoppingToken); // todo: potential error with batch overflow when kafka is down. investigate??
                     }
                 }
             }

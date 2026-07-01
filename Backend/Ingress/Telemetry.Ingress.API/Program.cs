@@ -1,10 +1,8 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.HttpLogging;
-using OpenTelemetry;
-using OpenTelemetry.Metrics;
 using Telemetry.Ingress.API.Infrastructure.DependencyInjectionExtensions;
 using Telemetry.Ingress.API.Infrastructure.Endpoints;
-using Telemetry.Ingress.API.Infrastructure.Observability;
+using Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,26 +33,9 @@ builder.Services.Configure<HostOptions>(opt =>
     opt.ServicesStopConcurrently = true;
 });
 
-builder.Services.AddHttpLogging(opt =>
-{
-    opt.LoggingFields = HttpLoggingFields.RequestPath
-                        | HttpLoggingFields.RequestMethod
-                        | HttpLoggingFields.ResponseStatusCode
-                        | HttpLoggingFields.Duration;
-
-    opt.CombineLogs = true;
-});
-
 builder.Services.AddSingleton<IngressMetrics>();
 
-builder.Services.AddOpenTelemetry()
-    .WithMetrics(metrics =>
-    {
-        metrics
-            .AddAspNetCoreInstrumentation()
-            .AddMeter(IngressMetrics.MeterName);
-        // todo: add prometheus
-    });
+builder.ConfigureOpenTelemetry();
 
 var app = builder.Build();
 

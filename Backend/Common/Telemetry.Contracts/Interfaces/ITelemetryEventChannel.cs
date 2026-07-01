@@ -8,16 +8,21 @@ namespace Telemetry.Contracts.Interfaces;
 public interface ITelemetryEventChannel
 {
     /// <summary>
+    /// Count of messages currently residing in a channel
+    /// </summary>
+    public int Count { get; }
+
+    /// <summary>
     /// Try writing to a channel
     /// </summary>
     /// <param name="event"></param>
     /// <returns>true on success, false otherwise</returns>
-    bool TryWrite(TelemetryEvent @event);
+    bool TryWrite(EnvelopedEvent @event);
 
     /// <summary>
     /// Read all messages from a channel
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns><see cref="IAsyncEnumerable{T}"/> to asynchronously iterate through a collection<br/>Waits for the next element to pop in a channel</returns>
-    IAsyncEnumerable<TelemetryEvent> ReadAllAsync(CancellationToken cancellationToken);
+    IAsyncEnumerable<EnvelopedEvent> ReadAllAsync(CancellationToken cancellationToken);
 }

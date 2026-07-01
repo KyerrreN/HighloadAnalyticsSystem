@@ -1,4 +1,4 @@
-﻿using Telemetry.Ingress.API.Infrastructure.Observability;
+﻿using Telemetry.Ingress.API.Infrastructure.Observability.HighPerformanceLogging;
 
 namespace Telemetry.Ingress.API.Infrastructure.Logging;
 

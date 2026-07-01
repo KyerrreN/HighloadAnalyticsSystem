@@ -1,4 +1,4 @@
-﻿namespace Telemetry.Ingress.API.Infrastructure.Observability;
+﻿namespace Telemetry.Ingress.API.Infrastructure.Observability.HighPerformanceLogging;
 
 public static class LoggingEventIdConstants
 {
