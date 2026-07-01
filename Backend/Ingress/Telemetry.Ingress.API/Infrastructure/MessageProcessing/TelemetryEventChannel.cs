@@ -9,6 +9,7 @@ public class TelemetryEventChannel : ITelemetryEventChannel
     private readonly Channel<EnvelopedEvent> _channel;
     // todo: determine the right size for backpressure. seems too low for a moment
     // also calculate message size
+    // maybe move it to config?
     private const int _channelCapacity = 100_000;
     
     public int Count => _channel.Reader.Count;

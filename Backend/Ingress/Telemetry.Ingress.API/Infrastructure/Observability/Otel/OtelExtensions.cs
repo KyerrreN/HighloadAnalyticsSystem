@@ -9,7 +9,6 @@ namespace Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 public static class OtelExtensions
 {
     private const string ServiceName = "Telemetry.Ingress";
-    private const string ActivitySourceName = "Telemetry.Ingress.Tracing";
 
     extension (WebApplicationBuilder builder)
     {
@@ -43,7 +42,7 @@ public static class OtelExtensions
                 {
                     tracing
                         .AddAspNetCoreInstrumentation()
-                        .AddSource(ActivitySourceName)
+                        .AddSource(OtelConstants.ActivitySourceName)
                         .AddOtlpExporter();
                 });
 

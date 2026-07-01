@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Telemetry.Contracts.Interfaces;
 using Telemetry.Ingress.API.Infrastructure.Observability.HighPerformanceLogging;
+using Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 
 namespace Telemetry.Ingress.API.Infrastructure.MessageProcessing;
 
@@ -11,7 +12,9 @@ public class TelemetryPublishWorker(
     ILogger<TelemetryPublishWorker> logger) 
     : BackgroundService
 {
-    private static readonly ActivitySource ActivitySource = new("Telemetry.Ingress.Tracing"); // todo: move name to constants
+    private static readonly ActivitySource ActivitySource = new(OtelConstants.ActivitySourceName);
+
+    public const string PublishActivityName = "Kafka Publish Event";
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -28,12 +31,12 @@ public class TelemetryPublishWorker(
                     try
                     {
                         using var activity = ActivitySource.StartActivity(
-                            "Kafka Publish Event",
+                            PublishActivityName,
                             ActivityKind.Producer,
                             envelope.TraceContext);
 
-                        activity?.SetTag("messaging.system", "kafka");
-                        activity?.SetTag("telemetry.event_name", envelope.Payload.EventName);
+                        activity?.SetTag(OtelTagConstants.MessagingSystem, "kafka");
+                        activity?.SetTag(OtelTagConstants.TelemetryEventName, envelope.Payload.EventName);
 
                         await messageBus.PublishAsync(envelope.Payload, envelope.TraceContext, stoppingToken);
 

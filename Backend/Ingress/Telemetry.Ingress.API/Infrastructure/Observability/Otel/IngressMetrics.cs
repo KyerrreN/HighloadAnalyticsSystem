@@ -18,19 +18,19 @@ public class IngressMetrics : IDisposable
         _meter = new Meter(MeterName);
 
         _eventsReceivedCounter = _meter.CreateCounter<long>(
-            name: "telemetry.ingress.events.received",
+            name: OtelConstants.EventsReceivedCounterName,
             description: "Count of successfully received events");
 
         _kafkaErrorsCounter = _meter.CreateCounter<long>(
-            name: "telemetry.ingress.kafka.errors",
+            name: OtelConstants.KafkaErrorsCounterName,
             description: "Count of errors when delivering messages to Kafka");
 
         _channelRejectedCounter = _meter.CreateCounter<long>(
-            name: "telemetry.ingress.channel.rejected",
+            name: OtelConstants.ChannelRejectedCounterName,
             description: "Count of events rejected due to channel overflow");
 
         _meter.CreateObservableGauge(
-            name: "telemetry.ingress.channel.size",
+            name: OtelConstants.ChannelSizeGaugeName,
             observeValue: () => channel.Count,
             description: "Current number of items in the in-memory channel");
     }
@@ -39,9 +39,9 @@ public class IngressMetrics : IDisposable
     {
         var tags = new TagList
         {
-            { "messaging.system", "kafka" },
-            { "messaging.destination.name", topicName },
-            { "error.type", errorType }
+            { OtelTagConstants.MessagingSystem, "kafka" },
+            { OtelTagConstants.MessagingDestinationName, topicName },
+            { OtelTagConstants.ErrorType, errorType }
         };
 
         _kafkaErrorsCounter.Add(1, tags);
