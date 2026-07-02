@@ -1,34 +1,33 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RocksDbSharp;
 using System.Diagnostics;
+using System.Text.Json;
 using Telemetry.Contracts.Events;
-using Telemetry.Contracts.Interfaces;
 using Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 
 namespace Telemetry.Ingress.API.Features.IngestEvent;
 
 public static class IngestEventEndpoint
 {
+    private static readonly WriteOptions AsyncWriteOptions = new WriteOptions().SetSync(false);
+
     extension(IEndpointRouteBuilder app)
     {
         public void MapIngestEndpoints()
         {
             app.MapPost("events", async (
                 [FromBody] TelemetryEvent requestBody,
-                [FromServices] ITelemetryEventChannel channel,
-                [FromServices] IngressMetrics metrics) =>
+                [FromServices] IngressMetrics metrics,
+                [FromServices] RocksDb db) =>
             {
                 // todo: validation
                 var activityContext = Activity.Current?.Context ?? default;
                 var envelope = new EnvelopedEvent(requestBody, activityContext);
 
-                var isWritten = channel.TryWrite(envelope);
+                var key = Ulid.NewUlid().ToByteArray();
+                var value = JsonSerializer.SerializeToUtf8Bytes(envelope);
 
-                if (!isWritten)
-                {
-                    // kafka problems, channel overflow
-                    metrics.RecordChannelRejected();
-                    return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
-                }
+                db.Put(key, value, writeOptions: AsyncWriteOptions);
 
                 metrics.RecordEventsReceived();
 

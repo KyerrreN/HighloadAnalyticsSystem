@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using Telemetry.Contracts.Interfaces;
 
 namespace Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 
@@ -13,7 +12,7 @@ public class IngressMetrics : IDisposable
     private readonly Counter<long> _kafkaErrorsCounter;
     private readonly Counter<long> _channelRejectedCounter;
 
-    public IngressMetrics(ITelemetryEventChannel channel)
+    public IngressMetrics()
     {
         _meter = new Meter(MeterName);
 
@@ -28,11 +27,6 @@ public class IngressMetrics : IDisposable
         _channelRejectedCounter = _meter.CreateCounter<long>(
             name: OtelConstants.ChannelRejectedCounterName,
             description: "Count of events rejected due to channel overflow");
-
-        _meter.CreateObservableGauge(
-            name: OtelConstants.ChannelSizeGaugeName,
-            observeValue: () => channel.Count,
-            description: "Current number of items in the in-memory channel");
     }
 
     public void RecordKafkaError(string topicName, string errorType)

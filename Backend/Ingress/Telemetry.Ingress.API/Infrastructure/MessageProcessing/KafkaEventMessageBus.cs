@@ -25,8 +25,8 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
     };
 
     public KafkaEventMessageBus(
-        IOptions<KafkaOptions> kafkaOptions, 
-        ILogger<KafkaEventMessageBus> logger, 
+        IOptions<KafkaOptions> kafkaOptions,
+        ILogger<KafkaEventMessageBus> logger,
         IngressMetrics metrics)
     {
         _options = kafkaOptions.Value;
@@ -34,10 +34,11 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
         var producerConfig = new ProducerConfig
         {
             BootstrapServers = _options.BootstrapServers,
-            // highload optimizations
-            Acks = Acks.Leader,
+            Acks = Acks.All,
+            EnableIdempotence = true,
+            MessageTimeoutMs = 0,
             LingerMs = 5,
-            CompressionType = CompressionType.Lz4
+            CompressionType = CompressionType.Lz4,
         };
 
         _producer = new ProducerBuilder<string, string>(producerConfig).Build();
@@ -45,16 +46,14 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
         _metrics = metrics;
     }
 
-    public Task PublishAsync(TelemetryEvent @event, ActivityContext traceContext, CancellationToken cancellationToken)
+    public async Task PublishAsync(TelemetryEvent @event, ActivityContext traceContext, CancellationToken cancellationToken)
     {
-        // construct message key/value
         var key = !string.IsNullOrWhiteSpace(@event.SessionId) ? @event.SessionId :
                   !string.IsNullOrWhiteSpace(@event.ActorId) ? @event.ActorId :
                   @event.ProjectApiKey;
 
         var value = JsonSerializer.Serialize(@event);
 
-        // construct headers
         var headers = new Headers();
         var propagationContext = new PropagationContext(traceContext, default);
         Propagators.DefaultTextMapPropagator.Inject(propagationContext, headers, SetHeaders);
@@ -66,22 +65,29 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
             Headers = headers
         };
 
-        _producer.Produce(_options.TopicName, message, deliveryHandler =>
+        try
         {
-            if (deliveryHandler.Error.IsError)
+            var deliveryResult = await _producer.ProduceAsync(_options.TopicName, message, cancellationToken);
+
+            if (deliveryResult.Status != PersistenceStatus.Persisted)
             {
-                _logger.LogDeliveryError(deliveryHandler.Error.Reason);
-
-                _metrics.RecordKafkaError(_options.TopicName, deliveryHandler.Error.Reason);
+                throw new Exception($"Message was not persisted. Status: {deliveryResult.Status}");
             }
-        });
+        }
+        catch (ProduceException<string, string> ex)
+        {
+            _logger.LogDeliveryError(ex.Error.Reason);
+            _metrics.RecordKafkaError(_options.TopicName, ex.Error.Reason);
 
-        return Task.CompletedTask;
+            throw;
+        }
     }
 
     public void Dispose()
     {
         GC.SuppressFinalize(this);
+
+        // graceful shutdown
         _producer.Flush(TimeSpan.FromSeconds(10));
         _producer.Dispose();
     }
