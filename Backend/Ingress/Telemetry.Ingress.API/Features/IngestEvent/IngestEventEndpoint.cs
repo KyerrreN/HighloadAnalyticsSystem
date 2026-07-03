@@ -3,14 +3,13 @@ using RocksDbSharp;
 using System.Diagnostics;
 using System.Text.Json;
 using Telemetry.Contracts.Events;
+using Telemetry.Ingress.API.Infrastructure.DependencyInjectionExtensions;
 using Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 
 namespace Telemetry.Ingress.API.Features.IngestEvent;
 
 public static class IngestEventEndpoint
 {
-    private static readonly WriteOptions AsyncWriteOptions = new WriteOptions().SetSync(false);
-
     extension(IEndpointRouteBuilder app)
     {
         public void MapIngestEndpoints()
@@ -27,7 +26,7 @@ public static class IngestEventEndpoint
                 var key = Ulid.NewUlid().ToByteArray();
                 var value = JsonSerializer.SerializeToUtf8Bytes(envelope);
 
-                db.Put(key, value, writeOptions: AsyncWriteOptions);
+                db.Put(key, value, writeOptions: RocksDbDefaults.AsyncWriteOptions);
 
                 metrics.RecordEventsReceived();
 

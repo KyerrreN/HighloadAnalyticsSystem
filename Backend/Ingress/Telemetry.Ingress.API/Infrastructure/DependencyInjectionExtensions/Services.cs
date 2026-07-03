@@ -6,6 +6,8 @@ namespace Telemetry.Ingress.API.Infrastructure.DependencyInjectionExtensions;
 
 public static class Services
 {
+    private const string DefaultDbLocation = "wal_buffer_data";
+
     extension (IServiceCollection services)
     {
         public IServiceCollection RegisterServices()
@@ -18,10 +20,16 @@ public static class Services
             return services;
         }
 
-        public IServiceCollection RegisterRocksDb(string dbPath = "wal_buffer_data") // todo: config
+        public IServiceCollection RegisterRocksDb(IConfiguration configuration)
         {
             services.AddSingleton<RocksDb>(sp =>
             {
+                var dbPath = DefaultDbLocation;
+
+                if (!string.IsNullOrEmpty(configuration.GetConnectionString("RocksDb")))
+                {
+                    dbPath = configuration.GetConnectionString("RocksDb");
+                }
                 var opt = new DbOptions().SetCreateIfMissing(true);
 
                 return RocksDb.Open(opt, dbPath);
