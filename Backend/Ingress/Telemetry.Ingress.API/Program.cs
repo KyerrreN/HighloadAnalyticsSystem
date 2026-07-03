@@ -25,7 +25,7 @@ builder.Services.AddApiVersioning(opt =>
 
 builder.Services.RegisterOptions(builder.Configuration);
 builder.Services.RegisterServices();
-builder.Services.RegisterRocksDb();
+builder.Services.RegisterRocksDb(builder.Configuration);
 
 // could be overkill, but wouldn't hurt
 builder.Services.Configure<HostOptions>(opt =>

@@ -46,6 +46,15 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
         _metrics = metrics;
     }
 
+    /// <summary>
+    /// Publishes message to kafka asynchronously
+    /// </summary>
+    /// <param name="event">Telemetry event to send</param>
+    /// <param name="traceContext">Trace context for OTEL</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="ProduceException{TKey, TValue}"></exception>
+    /// <exception cref="Exception"></exception>
     public async Task PublishAsync(TelemetryEvent @event, ActivityContext traceContext, CancellationToken cancellationToken)
     {
         var key = !string.IsNullOrWhiteSpace(@event.SessionId) ? @event.SessionId :
