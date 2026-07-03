@@ -14,16 +14,22 @@ namespace Telemetry.Ingress.API.Infrastructure.MessageProcessing;
 public class TelemetryPublishWorker(
     RocksDb db,
     IEventMessageBus messageBus,
-    ILogger<TelemetryPublishWorker> logger)
+    ILogger<TelemetryPublishWorker> logger,
+    IngressMetrics metrics)
     : BackgroundService
 {
     private static readonly ActivitySource ActivitySource = new(OtelConstants.ActivitySourceName);
     private const int BatchSize = 500;
     public const string PublishActivityName = "Kafka Publish Event";
 
+    private const int MaxDelayMs = 1000 * 30; // 30ms
+
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogStarted();
+
+        int currentDelayMs = 1000;
 
         try
         {
@@ -33,6 +39,8 @@ public class TelemetryPublishWorker(
                 {
                     bool hasProcessedData = await TryProcessNextBatchAsync(stoppingToken);
 
+                    currentDelayMs = 1000;
+
                     if (!hasProcessedData)
                     {
                         await Task.Delay(50, stoppingToken);
@@ -41,7 +49,11 @@ public class TelemetryPublishWorker(
                 catch (Exception ex)
                 {
                     logger.LogProcessingError(nameof(TelemetryPublishWorker), ex);
-                    await Task.Delay(1000, stoppingToken); // todo: retry policy
+
+                    logger.LogInformation("Current delay: {delay}", currentDelayMs);
+                    await Task.Delay(currentDelayMs, stoppingToken);
+
+                    currentDelayMs = Math.Min(currentDelayMs * 2, MaxDelayMs);
                 }
             }
         }
@@ -79,6 +91,8 @@ public class TelemetryPublishWorker(
             catch (Exception ex)
             {
                 logger.LogWorkerDeserializationError(ex);
+                metrics.RecordPoisolPill(ex.GetType().Name);
+
                 writeBatch.Delete(key);
                 hasPoisonPills = true;
 
@@ -140,7 +154,8 @@ public class TelemetryPublishWorker(
             }
 
             logger.LogKafkaMessageRejected(envelope.Payload.EventId, ex);
-            // todo: metric
+
+            metrics.RecordPermanentRejection(ex.Error.Reason);
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
         }
     }

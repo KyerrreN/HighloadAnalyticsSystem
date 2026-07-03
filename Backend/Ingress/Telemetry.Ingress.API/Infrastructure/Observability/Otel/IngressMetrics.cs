@@ -10,7 +10,8 @@ public class IngressMetrics : IDisposable
     private readonly Meter _meter;
     private readonly Counter<long> _eventsReceivedCounter;
     private readonly Counter<long> _kafkaErrorsCounter;
-    private readonly Counter<long> _channelRejectedCounter;
+    private readonly Counter<long> _poisonPillsCounter;
+    private readonly Counter<long> _permanentRejectionCounter;
 
     public IngressMetrics()
     {
@@ -24,9 +25,13 @@ public class IngressMetrics : IDisposable
             name: OtelConstants.KafkaErrorsCounterName,
             description: "Count of errors when delivering messages to Kafka");
 
-        _channelRejectedCounter = _meter.CreateCounter<long>(
-            name: OtelConstants.ChannelRejectedCounterName,
-            description: "Count of events rejected due to channel overflow");
+        _poisonPillsCounter = _meter.CreateCounter<long>(
+            name: OtelConstants.PoisonPillsCounterName,
+            description: "Count of corrupted messages (poison pills) dropped from WAL");
+
+        _permanentRejectionCounter = _meter.CreateCounter<long>(
+            name: OtelConstants.KafkaRejectedMessageCounter,
+            description: "Count of valid messages permanently rejected by Kafka and dropped");
     }
 
     public void RecordKafkaError(string topicName, string errorType)
@@ -46,13 +51,30 @@ public class IngressMetrics : IDisposable
         _eventsReceivedCounter.Add(1);
     }
 
-    public void RecordChannelRejected()
+    public void RecordPoisolPill(string exceptionType)
     {
-        _channelRejectedCounter.Add(1);
+        var tags = new TagList
+        {
+            { OtelTagConstants.ErrorType, exceptionType }
+        };
+
+        _poisonPillsCounter.Add(1, tags);
+    }
+
+    public void RecordPermanentRejection(string reason)
+    {
+        var tags = new TagList
+        {
+            { OtelTagConstants.MessagingSystem, "kafka" },
+            { OtelTagConstants.ErrorType, reason }
+        };
+
+        _permanentRejectionCounter.Add(1, tags);
     }
 
     public void Dispose()
     {
+        GC.SuppressFinalize(this);
         _meter.Dispose();
     }
 }
