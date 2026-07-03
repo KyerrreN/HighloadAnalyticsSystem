@@ -14,7 +14,7 @@ public static class IngestEventEndpoint
     {
         public void MapIngestEndpoints()
         {
-            app.MapPost("events", async (
+            app.MapPost("events", (
                 [FromBody] TelemetryEvent requestBody,
                 [FromServices] IngressMetrics metrics,
                 [FromServices] RocksDb db) =>
