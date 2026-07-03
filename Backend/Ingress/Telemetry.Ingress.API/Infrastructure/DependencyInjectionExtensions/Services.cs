@@ -1,6 +1,6 @@
-﻿using RocksDbSharp;
-using Telemetry.Contracts.Interfaces;
+﻿using Telemetry.Contracts.Interfaces;
 using Telemetry.Ingress.API.Infrastructure.MessageProcessing;
+using Telemetry.Ingress.API.Infrastructure.Services;
 
 namespace Telemetry.Ingress.API.Infrastructure.DependencyInjectionExtensions;
 
@@ -22,17 +22,15 @@ public static class Services
 
         public IServiceCollection RegisterRocksDb(IConfiguration configuration)
         {
-            services.AddSingleton<RocksDb>(sp =>
+            services.AddSingleton<LocalBufferService>(sp =>
             {
-                var dbPath = DefaultDbLocation;
+                var connectionString = configuration.GetConnectionString("RocksDb");
 
-                if (!string.IsNullOrEmpty(configuration.GetConnectionString("RocksDb")))
-                {
-                    dbPath = configuration.GetConnectionString("RocksDb");
-                }
-                var opt = new DbOptions().SetCreateIfMissing(true);
+                string dbPath = string.IsNullOrEmpty(connectionString)
+                    ? DefaultDbLocation
+                    : connectionString;
 
-                return RocksDb.Open(opt, dbPath);
+                return new LocalBufferService(dbPath);
             });
 
             return services;

@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using RocksDbSharp;
 using System.Diagnostics;
 using System.Text.Json;
 using Telemetry.Contracts.Events;
-using Telemetry.Ingress.API.Infrastructure.DependencyInjectionExtensions;
 using Telemetry.Ingress.API.Infrastructure.Observability.Otel;
+using Telemetry.Ingress.API.Infrastructure.Services;
 
 namespace Telemetry.Ingress.API.Features.IngestEvent;
 
@@ -17,7 +16,7 @@ public static class IngestEventEndpoint
             app.MapPost("events", (
                 [FromBody] TelemetryEvent requestBody,
                 [FromServices] IngressMetrics metrics,
-                [FromServices] RocksDb db) =>
+                [FromServices] LocalBufferService buffer) =>
             {
                 // todo: validation
                 var activityContext = Activity.Current?.Context ?? default;
@@ -26,7 +25,7 @@ public static class IngestEventEndpoint
                 var key = Ulid.NewUlid().ToByteArray();
                 var value = JsonSerializer.SerializeToUtf8Bytes(envelope);
 
-                db.Put(key, value, writeOptions: RocksDbDefaults.AsyncWriteOptions);
+                buffer.Put(key, value);
 
                 metrics.RecordEventsReceived();
 

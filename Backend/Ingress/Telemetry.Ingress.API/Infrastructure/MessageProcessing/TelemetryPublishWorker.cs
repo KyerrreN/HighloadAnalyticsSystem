@@ -4,15 +4,15 @@ using System.Diagnostics;
 using System.Text.Json;
 using Telemetry.Contracts.Events;
 using Telemetry.Contracts.Interfaces;
-using Telemetry.Ingress.API.Infrastructure.DependencyInjectionExtensions;
 using Telemetry.Ingress.API.Infrastructure.Logging;
 using Telemetry.Ingress.API.Infrastructure.Observability.HighPerformanceLogging;
 using Telemetry.Ingress.API.Infrastructure.Observability.Otel;
+using Telemetry.Ingress.API.Infrastructure.Services;
 
 namespace Telemetry.Ingress.API.Infrastructure.MessageProcessing;
 
 public class TelemetryPublishWorker(
-    RocksDb db,
+    LocalBufferService buffer,
     IEventMessageBus messageBus,
     ILogger<TelemetryPublishWorker> logger,
     IngressMetrics metrics)
@@ -23,7 +23,6 @@ public class TelemetryPublishWorker(
     public const string PublishActivityName = "Kafka Publish Event";
 
     private const int MaxDelayMs = 1000 * 30; // 30ms
-
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -50,7 +49,6 @@ public class TelemetryPublishWorker(
                 {
                     logger.LogProcessingError(nameof(TelemetryPublishWorker), ex);
 
-                    logger.LogInformation("Current delay: {delay}", currentDelayMs);
                     await Task.Delay(currentDelayMs, stoppingToken);
 
                     currentDelayMs = Math.Min(currentDelayMs * 2, MaxDelayMs);
@@ -65,7 +63,7 @@ public class TelemetryPublishWorker(
 
     private async Task<bool> TryProcessNextBatchAsync(CancellationToken stoppingToken)
     {
-        using var iterator = db.NewIterator();
+        using var iterator = buffer.NewIterator();
         iterator.SeekToFirst();
 
         if (!iterator.Valid())
@@ -117,7 +115,7 @@ public class TelemetryPublishWorker(
 
         if (publishTasks.Count == 0 && hasPoisonPills)
         {
-            db.Write(writeBatch, RocksDbDefaults.AsyncWriteOptions);
+            buffer.Write(writeBatch);
             return true;
         }
 
@@ -128,7 +126,7 @@ public class TelemetryPublishWorker(
             writeBatch.Delete(key);
         }
 
-        db.Write(writeBatch, RocksDbDefaults.AsyncWriteOptions);
+        buffer.Write(writeBatch);
 
         return true;
     }
