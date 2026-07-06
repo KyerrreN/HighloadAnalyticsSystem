@@ -1,5 +1,7 @@
-﻿using Telemetry.Contracts.Interfaces;
+﻿using Microsoft.Extensions.Options;
+using Telemetry.Contracts.Interfaces;
 using Telemetry.Ingress.API.Infrastructure.MessageProcessing;
+using Telemetry.Ingress.API.Infrastructure.Options;
 using Telemetry.Ingress.API.Infrastructure.Services;
 
 namespace Telemetry.Ingress.API.Infrastructure.DependencyInjectionExtensions;
@@ -22,13 +24,15 @@ public static class Services
 
         public IServiceCollection RegisterRocksDb(IConfiguration configuration)
         {
+            services.Configure<RocksDbOptions>(configuration.GetSection(RocksDbOptions.SectionName));
+
             services.AddSingleton<LocalBufferService>(sp =>
             {
-                var connectionString = configuration.GetConnectionString("RocksDb");
+                var options = sp.GetRequiredService<IOptions<RocksDbOptions>>().Value;
 
-                string dbPath = string.IsNullOrEmpty(connectionString)
+                string dbPath = string.IsNullOrEmpty(options.ConnectionString)
                     ? DefaultDbLocation
-                    : connectionString;
+                    : options.ConnectionString;
 
                 return new LocalBufferService(dbPath);
             });
