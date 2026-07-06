@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using Telemetry.Contracts.Interfaces;
 
 namespace Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 
@@ -11,9 +10,10 @@ public class IngressMetrics : IDisposable
     private readonly Meter _meter;
     private readonly Counter<long> _eventsReceivedCounter;
     private readonly Counter<long> _kafkaErrorsCounter;
-    private readonly Counter<long> _channelRejectedCounter;
+    private readonly Counter<long> _poisonPillsCounter;
+    private readonly Counter<long> _permanentRejectionCounter;
 
-    public IngressMetrics(ITelemetryEventChannel channel)
+    public IngressMetrics()
     {
         _meter = new Meter(MeterName);
 
@@ -25,14 +25,13 @@ public class IngressMetrics : IDisposable
             name: OtelConstants.KafkaErrorsCounterName,
             description: "Count of errors when delivering messages to Kafka");
 
-        _channelRejectedCounter = _meter.CreateCounter<long>(
-            name: OtelConstants.ChannelRejectedCounterName,
-            description: "Count of events rejected due to channel overflow");
+        _poisonPillsCounter = _meter.CreateCounter<long>(
+            name: OtelConstants.PoisonPillsCounterName,
+            description: "Count of corrupted messages (poison pills) dropped from WAL");
 
-        _meter.CreateObservableGauge(
-            name: OtelConstants.ChannelSizeGaugeName,
-            observeValue: () => channel.Count,
-            description: "Current number of items in the in-memory channel");
+        _permanentRejectionCounter = _meter.CreateCounter<long>(
+            name: OtelConstants.KafkaRejectedMessageCounter,
+            description: "Count of valid messages permanently rejected by Kafka and dropped");
     }
 
     public void RecordKafkaError(string topicName, string errorType)
@@ -52,13 +51,30 @@ public class IngressMetrics : IDisposable
         _eventsReceivedCounter.Add(1);
     }
 
-    public void RecordChannelRejected()
+    public void RecordPoisolPill(string exceptionType)
     {
-        _channelRejectedCounter.Add(1);
+        var tags = new TagList
+        {
+            { OtelTagConstants.ErrorType, exceptionType }
+        };
+
+        _poisonPillsCounter.Add(1, tags);
+    }
+
+    public void RecordPermanentRejection(string reason)
+    {
+        var tags = new TagList
+        {
+            { OtelTagConstants.MessagingSystem, "kafka" },
+            { OtelTagConstants.ErrorType, reason }
+        };
+
+        _permanentRejectionCounter.Add(1, tags);
     }
 
     public void Dispose()
     {
+        GC.SuppressFinalize(this);
         _meter.Dispose();
     }
 }

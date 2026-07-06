@@ -33,4 +33,10 @@ public static partial class KafkaLogging
         Level = LogLevel.Error,
         Message = "Unknown error while creating Kafka topic \"{topicName}\"")]
     public static partial void LogTopicUnknownCreationError(this ILogger logger, string topicName, Exception ex);
+
+    [LoggerMessage(
+        EventId = LoggingEventIdConstants.KafkaLogMessageRejected,
+        Level = LogLevel.Error,
+        Message = "Permanent Kafka rejection for event {eventId}. Message dropped.")]
+    public static partial void LogKafkaMessageRejected(this ILogger logger, Guid eventId, Exception? ex);
 }
