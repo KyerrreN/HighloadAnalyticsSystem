@@ -9,6 +9,8 @@ namespace Telemetry.Ingress.API.Features.IngestEvent;
 
 public static class IngestEventEndpoint
 {
+    private static readonly ActivitySource ActivitySource = new(OtelConstants.ActivitySourceName);
+
     extension(IEndpointRouteBuilder app)
     {
         public void MapIngestEndpoints()
@@ -19,13 +21,16 @@ public static class IngestEventEndpoint
                 [FromServices] LocalBufferService buffer) =>
             {
                 // todo: validation
-                var activityContext = Activity.Current?.Context ?? default;
-                var envelope = new EnvelopedEvent(requestBody, activityContext);
+                string? traceParent = Activity.Current?.Id;
+                var envelope = new EnvelopedEvent(requestBody, traceParent);
 
                 var key = Ulid.NewUlid().ToByteArray();
                 var value = JsonSerializer.SerializeToUtf8Bytes(envelope);
 
-                buffer.Put(key, value);
+                using (var activity = ActivitySource.StartActivity("RocksDB Put", ActivityKind.Internal))
+                {
+                    buffer.Put(key, value);
+                }
 
                 metrics.RecordEventsReceived();
 

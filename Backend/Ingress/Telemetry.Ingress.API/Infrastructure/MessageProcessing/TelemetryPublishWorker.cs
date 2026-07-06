@@ -133,20 +133,25 @@ public class TelemetryPublishWorker(
 
     private async Task PublishWithTracingAsync(EnvelopedEvent envelope, CancellationToken stoppingToken)
     {
+        var parentContext = string.IsNullOrEmpty(envelope.TraceParent)
+            ? default
+            : ActivityContext.Parse(envelope.TraceParent, null);
+
         using var activity = ActivitySource.StartActivity(
             PublishActivityName,
             ActivityKind.Producer,
-            envelope.TraceContext);
+            parentContext);
 
         activity?.SetTag(OtelTagConstants.MessagingSystem, "kafka");
 
         try
         {
-            await messageBus.PublishAsync(envelope.Payload, envelope.TraceContext, stoppingToken);
+            await messageBus.PublishAsync(envelope.Payload, parentContext, stoppingToken);
         }
         catch (ProduceException<string, string> ex)
         {
-            if (ex.Error.IsFatal)
+            // retry if recoverable
+            if (ex.Error.IsFatal || ex.Error.Code == ErrorCode.Local_MsgTimedOut || ex.Error.IsBrokerError)
             {
                 throw;
             }
