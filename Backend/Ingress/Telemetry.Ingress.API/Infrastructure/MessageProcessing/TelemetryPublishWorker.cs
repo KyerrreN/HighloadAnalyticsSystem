@@ -22,7 +22,7 @@ public class TelemetryPublishWorker(
     private const int BatchSize = 500;
     public const string PublishActivityName = "Kafka Publish Event";
 
-    private const int MaxDelayMs = 1000 * 30; // 30ms
+    private const int MaxDelayMs = 1000 * 30; // 30s
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
