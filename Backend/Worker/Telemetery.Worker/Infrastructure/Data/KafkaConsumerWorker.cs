@@ -5,6 +5,8 @@ using Telemetry.Worker.Infrastructure.Options;
 using Telemetry.Contracts.Events;
 using Telemetry.Worker.Infrastructure.Data.Interfaces;
 using Telemetry.Worker.Infrastructure.Observability.Logging;
+using Telemetry.Worker.Infrastructure.Observability.Otel;
+using System.Text;
 
 namespace Telemetry.Worker.Infrastructure.Data;
 
@@ -14,17 +16,20 @@ public class KafkaConsumerWorker : BackgroundService
     private readonly BatchingOptions _batchingOptions;
     private readonly ITelemetrySink _sink;
     private readonly ILogger<KafkaConsumerWorker> _logger;
+    private readonly WorkerMetrics _metrics;
 
     public KafkaConsumerWorker(
         IOptions<KafkaOptions> options,
         ILogger<KafkaConsumerWorker> logger,
         IOptions<BatchingOptions> batchingOptions,
-        ITelemetrySink sink)
+        ITelemetrySink sink,
+        WorkerMetrics metrics)
     {
         _kafkaOptions = options.Value;
         _logger = logger;
         _batchingOptions = batchingOptions.Value;
         _sink = sink;
+        _metrics = metrics;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -45,7 +50,7 @@ public class KafkaConsumerWorker : BackgroundService
         consumer.Subscribe(_kafkaOptions.TopicName);
         _logger.LogSubscribedToTopic(_kafkaOptions.TopicName);
 
-        var batch = new List<TelemetryEvent>(_batchingOptions.MaxBatchSize);
+        var batch = new List<EnvelopedEvent>(_batchingOptions.MaxBatchSize);
         var lastFlushTime = DateTime.UtcNow;
 
         // necessary to not block the thread
@@ -65,11 +70,22 @@ public class KafkaConsumerWorker : BackgroundService
 
                         if (telemeteryEvent is not null)
                         {
-                            batch.Add(telemeteryEvent);
+                            string? traceParent = null;
+
+                            if (consumeResult.Message.Headers is not null 
+                                && consumeResult.Message.Headers.TryGetLastBytes("traceparent", out var headerBytes))
+                            {
+                                traceParent = Encoding.UTF8.GetString(headerBytes);
+                            }
+
+                            var envelopedEvent = new EnvelopedEvent(telemeteryEvent, traceParent);
+
+                            batch.Add(envelopedEvent);
                         }
                     }
                     catch (JsonException ex)
                     {
+                        _metrics.RecordPoisonPill();
                         _logger.LogDeserializationError(ex);
                     }
                 }
@@ -88,6 +104,9 @@ public class KafkaConsumerWorker : BackgroundService
                         await _sink.SaveBatchAsync(batch, stoppingToken);
 
                         consumer.Commit();
+
+                        _metrics.RecordEventsConsumed(batch.Count);
+                        _metrics.RecordBatchSize(batch.Count);
 
                         batch.Clear();
                         lastFlushTime = DateTime.UtcNow;

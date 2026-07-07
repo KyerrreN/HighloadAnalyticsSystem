@@ -13,5 +13,5 @@ public interface ITelemetrySink
     /// <param name="events">Event batch</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task SaveBatchAsync(IReadOnlyCollection<TelemetryEvent> events, CancellationToken cancellationToken);
+    Task SaveBatchAsync(IReadOnlyCollection<EnvelopedEvent> events, CancellationToken cancellationToken);
 }

@@ -1,6 +1,7 @@
 using Telemetry.Worker.Infrastructure.Options;
 using Telemetry.Worker.Infrastructure.Data;
 using Telemetry.Worker.Infrastructure.Data.Interfaces;
+using Telemetry.Worker.Infrastructure.Observability.Otel;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -18,6 +19,8 @@ builder.Services.AddOptions<ClickHouseOptions>()
     .Bind(builder.Configuration.GetSection(ClickHouseOptions.SectionName))
     .ValidateDataAnnotations()
     .ValidateOnStart();
+
+builder.ConfigureOtel();
 
 builder.Services.AddSingleton<ITelemetrySink, ClickHouseTelemetrySinc>();
 

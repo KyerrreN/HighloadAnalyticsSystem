@@ -2,6 +2,7 @@
 using RocksDbSharp;
 using System.Diagnostics;
 using System.Text.Json;
+using Telemetry.Contracts.Constants;
 using Telemetry.Contracts.Events;
 using Telemetry.Contracts.Interfaces;
 using Telemetry.Ingress.API.Infrastructure.Logging;

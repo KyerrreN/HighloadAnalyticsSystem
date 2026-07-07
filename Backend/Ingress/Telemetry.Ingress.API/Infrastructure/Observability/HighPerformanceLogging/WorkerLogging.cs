@@ -5,7 +5,7 @@ public static partial class WorkerLogging
     [LoggerMessage(
         EventId = LoggingEventIdConstants.WorkerLogStarted,
         Level = LogLevel.Information,
-        Message = "Background worker for reading a channel has been started")]
+        Message = "Background worker (buffer) has been started")]
     public static partial void LogStarted(this ILogger logger);
 
     [LoggerMessage(
