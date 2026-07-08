@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.HttpLogging;
-using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Telemetry.Shared.Observability;
 
 namespace Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 
@@ -14,36 +13,19 @@ public static class OtelExtensions
     {
         public WebApplicationBuilder ConfigureOpenTelemetry()
         {
-            builder.Logging.ClearProviders();
-            if (builder.Environment.IsDevelopment())
-            {
-                builder.Logging.AddConsole();
-            }
-
-            builder.Logging.AddOpenTelemetry(logging =>
-            {
-                logging.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(ServiceName));
-
-                logging.IncludeFormattedMessage = true;
-                logging.IncludeScopes = true;
-                logging.AddOtlpExporter();
-            });
-
-            builder.Services.AddOpenTelemetry()
-                .ConfigureResource(resource => resource.AddService(ServiceName))
-                .WithMetrics(metrics =>
+            builder.ConfigureOpenTelemetry(
+                serviceName: ServiceName,
+                configureMetrics: metrics =>
                 {
                     metrics
                         .AddAspNetCoreInstrumentation()
-                        .AddMeter(IngressMetrics.MeterName)
-                        .AddOtlpExporter();
-                })
-                .WithTracing(tracing =>
+                        .AddMeter(IngressMetrics.MeterName);
+                },
+                configureTracing: tracing =>
                 {
                     tracing
                         .AddAspNetCoreInstrumentation()
-                        .AddSource(OtelConstants.ActivitySourceName)
-                        .AddOtlpExporter();
+                        .AddSource(OtelConstants.ActivitySourceName);
                 });
 
             builder.Services.AddHttpLogging(opt =>

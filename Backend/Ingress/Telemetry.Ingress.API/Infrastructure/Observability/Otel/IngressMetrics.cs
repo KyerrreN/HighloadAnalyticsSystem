@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using Telemetry.Contracts.Constants;
 
 namespace Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 

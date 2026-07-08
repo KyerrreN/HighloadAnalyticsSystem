@@ -36,7 +36,7 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
             BootstrapServers = _options.BootstrapServers,
             Acks = Acks.All,
             EnableIdempotence = true,
-            MessageTimeoutMs = 0,
+            MessageTimeoutMs = 30000, // 30s
             LingerMs = 5,
             CompressionType = CompressionType.Lz4,
         };
