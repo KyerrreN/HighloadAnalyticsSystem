@@ -147,7 +147,7 @@ public class TelemetryPublishWorker(
 
         try
         {
-            await messageBus.PublishAsync(envelope.Payload, parentContext, stoppingToken);
+            await messageBus.PublishAsync(envelope.Payload, parentContext, envelope.ReceivedAt, stoppingToken);
         }
         catch (ProduceException<string, string> ex)
         {

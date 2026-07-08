@@ -18,11 +18,14 @@ public static class IngestEventEndpoint
             app.MapPost("events", (
                 [FromBody] TelemetryEvent requestBody,
                 [FromServices] IngressMetrics metrics,
-                [FromServices] LocalBufferService buffer) =>
+                [FromServices] LocalBufferService buffer,
+                [FromServices] TimeProvider timeProvider) =>
             {
                 // todo: validation
                 string? traceParent = Activity.Current?.Id;
-                var envelope = new EnvelopedEvent(requestBody, traceParent);
+                var receivedAt = timeProvider.GetUtcNow().UtcDateTime;
+
+                var envelope = new EnvelopedEvent(requestBody, traceParent, receivedAt);
 
                 var key = Ulid.NewUlid().ToByteArray();
                 var value = JsonSerializer.SerializeToUtf8Bytes(envelope);

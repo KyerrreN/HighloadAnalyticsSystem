@@ -35,15 +35,16 @@ public class ClickHouseSetupService : IHostedService
                 (
                     ProjectApiKey String,
                     Timestamp DateTime64(3, 'UTC'),
+                    ReceivedAt DateTime64(3, 'UTC'),
                     EventId UUID,
                     EventName String,
                     ActorId String,
                     SessionId String,
                     Properties String
                 )
-                ENGINE = MergeTree()
-                PARTITION BY toYYYYMMDD(Timestamp)
-                ORDER BY (ProjectApiKey, EventName, Timestamp);
+                ENGINE = ReplacingMergeTree()
+                PARTITION BY toMonday(ReceivedAt) 
+                ORDER BY (ProjectApiKey, EventName, Timestamp, EventId);
             ";
 
             await command.ExecuteNonQueryAsync(cancellationToken);

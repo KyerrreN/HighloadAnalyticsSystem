@@ -2,5 +2,6 @@
 
 public record EnvelopedEvent(
     TelemetryEvent Payload,
-    string? TraceParent
+    string? TraceParent,
+    DateTime ReceivedAt
 );

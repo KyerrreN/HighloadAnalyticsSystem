@@ -45,6 +45,7 @@ public class ClickHouseTelemetrySinc : ITelemetrySink
         {
             e.Payload.ProjectApiKey,
             e.Payload.Timestamp,
+            e.ReceivedAt,
             e.Payload.EventId.ToString(),
             e.Payload.EventName,
             e.Payload.ActorId ?? "",

@@ -71,14 +71,26 @@ public class KafkaConsumerWorker : BackgroundService
                         if (telemeteryEvent is not null)
                         {
                             string? traceParent = null;
+                            DateTime receivedAt = DateTime.UtcNow;
 
-                            if (consumeResult.Message.Headers is not null 
-                                && consumeResult.Message.Headers.TryGetLastBytes("traceparent", out var headerBytes))
+                            if (consumeResult.Message.Headers is not null)
                             {
-                                traceParent = Encoding.UTF8.GetString(headerBytes);
+                                if (consumeResult.Message.Headers.TryGetLastBytes("traceparent", out var headerBytes))
+                                {
+                                    traceParent = Encoding.UTF8.GetString(headerBytes);
+                                }
+
+                                if (consumeResult.Message.Headers.TryGetLastBytes("receivedat", out var receivedAtBytes))
+                                {
+                                    var receivedAtStr = Encoding.UTF8.GetString(receivedAtBytes);
+                                    if (DateTime.TryParse(receivedAtStr, out var parsedDate))
+                                    {
+                                        receivedAt = parsedDate;
+                                    }
+                                }
                             }
 
-                            var envelopedEvent = new EnvelopedEvent(telemeteryEvent, traceParent);
+                            var envelopedEvent = new EnvelopedEvent(telemeteryEvent, traceParent, receivedAt);
 
                             batch.Add(envelopedEvent);
                         }

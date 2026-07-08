@@ -55,7 +55,7 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
     /// <returns></returns>
     /// <exception cref="ProduceException{TKey, TValue}"></exception>
     /// <exception cref="Exception"></exception>
-    public async Task PublishAsync(TelemetryEvent @event, ActivityContext traceContext, CancellationToken cancellationToken)
+    public async Task PublishAsync(TelemetryEvent @event, ActivityContext traceContext, DateTime receivedAt, CancellationToken cancellationToken)
     {
         var key = !string.IsNullOrWhiteSpace(@event.SessionId) ? @event.SessionId :
                   !string.IsNullOrWhiteSpace(@event.ActorId) ? @event.ActorId :
@@ -66,6 +66,8 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
         var headers = new Headers();
         var propagationContext = new PropagationContext(traceContext, default);
         Propagators.DefaultTextMapPropagator.Inject(propagationContext, headers, SetHeaders);
+
+        SetHeaders(headers, "receivedat", receivedAt.ToString("O"));
 
         var message = new Message<string, string>
         {
