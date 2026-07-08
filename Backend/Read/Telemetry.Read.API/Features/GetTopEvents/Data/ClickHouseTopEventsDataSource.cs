@@ -21,7 +21,7 @@ public class ClickHouseTopEventsDataSource : ITopEventsDataSource
 
         using var command = connection.CreateCommand();
         command.CommandText = """
-           SELECT EventName, count() AS Count
+           SELECT EventName, uniqExact(EventId) AS Count
            FROM telemetry_events
            WHERE ProjectApiKey = @apiKey 
            AND Timestamp >= @from 
