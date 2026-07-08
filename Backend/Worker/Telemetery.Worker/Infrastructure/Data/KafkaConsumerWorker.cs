@@ -17,19 +17,22 @@ public class KafkaConsumerWorker : BackgroundService
     private readonly ITelemetrySink _sink;
     private readonly ILogger<KafkaConsumerWorker> _logger;
     private readonly WorkerMetrics _metrics;
+    private readonly TimeProvider _timeProvider;
 
     public KafkaConsumerWorker(
         IOptions<KafkaOptions> options,
         ILogger<KafkaConsumerWorker> logger,
         IOptions<BatchingOptions> batchingOptions,
         ITelemetrySink sink,
-        WorkerMetrics metrics)
+        WorkerMetrics metrics,
+        TimeProvider timeProvider)
     {
         _kafkaOptions = options.Value;
         _logger = logger;
         _batchingOptions = batchingOptions.Value;
         _sink = sink;
         _metrics = metrics;
+        _timeProvider = timeProvider;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -71,7 +74,7 @@ public class KafkaConsumerWorker : BackgroundService
                         if (telemeteryEvent is not null)
                         {
                             string? traceParent = null;
-                            DateTime receivedAt = DateTime.UtcNow;
+                            DateTime receivedAt = _timeProvider.GetUtcNow().UtcDateTime;
 
                             if (consumeResult.Message.Headers is not null)
                             {
