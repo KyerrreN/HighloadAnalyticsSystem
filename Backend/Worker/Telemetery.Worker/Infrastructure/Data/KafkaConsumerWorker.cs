@@ -108,28 +108,33 @@ public class KafkaConsumerWorker : BackgroundService
                 if (isBatchFull || isTimeUp)
                 {
                     string reason = isBatchFull ? "Hit batch limit" : "Timeout";
-
                     _logger.LogFlushingBatch(batch.Count, reason);
 
-                    try
+                    bool isBatchSaved = false;
+
+                    while (!isBatchSaved && !stoppingToken.IsCancellationRequested)
                     {
-                        await _sink.SaveBatchAsync(batch, stoppingToken);
+                        try
+                        {
+                            await _sink.SaveBatchAsync(batch, stoppingToken);
 
-                        consumer.Commit();
+                            consumer.Commit();
 
-                        _metrics.RecordEventsConsumed(batch.Count);
-                        _metrics.RecordBatchSize(batch.Count);
+                            _metrics.RecordEventsConsumed(batch.Count);
+                            _metrics.RecordBatchSize(batch.Count);
 
-                        batch.Clear();
-                        lastFlushTime = DateTime.UtcNow;
+                            batch.Clear();
+                            lastFlushTime = DateTime.UtcNow;
+                            isBatchSaved = true;
 
-                        _logger.LogBatchSaved();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogSinkFlushError(ex);
+                            _logger.LogBatchSaved();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogSinkFlushError(ex);
 
-                        await Task.Delay(2000, stoppingToken); // todo: potential error with batch overflow when kafka is down. investigate??
+                            await Task.Delay(2000, stoppingToken);
+                        }
                     }
                 }
             }
