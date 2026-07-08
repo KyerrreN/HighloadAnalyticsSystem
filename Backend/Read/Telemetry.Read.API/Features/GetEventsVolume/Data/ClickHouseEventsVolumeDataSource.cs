@@ -25,7 +25,7 @@ public class ClickHouseEventsVolumeDataSource : IEventsVolumeDataSource
         command.CommandText = """
             SELECT 
                 toStartOfInterval(Timestamp, toIntervalMinute(@minutes)) AS Bucket,
-                count() AS TotalEvents
+                uniqExact(EventId) AS TotalEvents
             FROM telemetry_events
             WHERE ProjectApiKey = @apiKey 
               AND Timestamp >= @from 

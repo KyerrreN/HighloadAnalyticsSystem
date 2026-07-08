@@ -17,19 +17,22 @@ public class KafkaConsumerWorker : BackgroundService
     private readonly ITelemetrySink _sink;
     private readonly ILogger<KafkaConsumerWorker> _logger;
     private readonly WorkerMetrics _metrics;
+    private readonly TimeProvider _timeProvider;
 
     public KafkaConsumerWorker(
         IOptions<KafkaOptions> options,
         ILogger<KafkaConsumerWorker> logger,
         IOptions<BatchingOptions> batchingOptions,
         ITelemetrySink sink,
-        WorkerMetrics metrics)
+        WorkerMetrics metrics,
+        TimeProvider timeProvider)
     {
         _kafkaOptions = options.Value;
         _logger = logger;
         _batchingOptions = batchingOptions.Value;
         _sink = sink;
         _metrics = metrics;
+        _timeProvider = timeProvider;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -71,14 +74,26 @@ public class KafkaConsumerWorker : BackgroundService
                         if (telemeteryEvent is not null)
                         {
                             string? traceParent = null;
+                            DateTime receivedAt = _timeProvider.GetUtcNow().UtcDateTime;
 
-                            if (consumeResult.Message.Headers is not null 
-                                && consumeResult.Message.Headers.TryGetLastBytes("traceparent", out var headerBytes))
+                            if (consumeResult.Message.Headers is not null)
                             {
-                                traceParent = Encoding.UTF8.GetString(headerBytes);
+                                if (consumeResult.Message.Headers.TryGetLastBytes("traceparent", out var headerBytes))
+                                {
+                                    traceParent = Encoding.UTF8.GetString(headerBytes);
+                                }
+
+                                if (consumeResult.Message.Headers.TryGetLastBytes("receivedat", out var receivedAtBytes))
+                                {
+                                    var receivedAtStr = Encoding.UTF8.GetString(receivedAtBytes);
+                                    if (DateTime.TryParse(receivedAtStr, out var parsedDate))
+                                    {
+                                        receivedAt = parsedDate;
+                                    }
+                                }
                             }
 
-                            var envelopedEvent = new EnvelopedEvent(telemeteryEvent, traceParent);
+                            var envelopedEvent = new EnvelopedEvent(telemeteryEvent, traceParent, receivedAt);
 
                             batch.Add(envelopedEvent);
                         }
@@ -96,28 +111,33 @@ public class KafkaConsumerWorker : BackgroundService
                 if (isBatchFull || isTimeUp)
                 {
                     string reason = isBatchFull ? "Hit batch limit" : "Timeout";
-
                     _logger.LogFlushingBatch(batch.Count, reason);
 
-                    try
+                    bool isBatchSaved = false;
+
+                    while (!isBatchSaved && !stoppingToken.IsCancellationRequested)
                     {
-                        await _sink.SaveBatchAsync(batch, stoppingToken);
+                        try
+                        {
+                            await _sink.SaveBatchAsync(batch, stoppingToken);
 
-                        consumer.Commit();
+                            consumer.Commit();
 
-                        _metrics.RecordEventsConsumed(batch.Count);
-                        _metrics.RecordBatchSize(batch.Count);
+                            _metrics.RecordEventsConsumed(batch.Count);
+                            _metrics.RecordBatchSize(batch.Count);
 
-                        batch.Clear();
-                        lastFlushTime = DateTime.UtcNow;
+                            batch.Clear();
+                            lastFlushTime = DateTime.UtcNow;
+                            isBatchSaved = true;
 
-                        _logger.LogBatchSaved();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogSinkFlushError(ex);
+                            _logger.LogBatchSaved();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogSinkFlushError(ex);
 
-                        await Task.Delay(2000, stoppingToken); // todo: potential error with batch overflow when kafka is down. investigate??
+                            await Task.Delay(2000, stoppingToken);
+                        }
                     }
                 }
             }

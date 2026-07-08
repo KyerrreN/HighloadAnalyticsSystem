@@ -35,6 +35,7 @@ builder.Services.Configure<HostOptions>(opt =>
 });
 
 builder.Services.AddSingleton<IngressMetrics>();
+builder.Services.AddSingleton(TimeProvider.System);
 
 builder.ConfigureOpenTelemetry();
 

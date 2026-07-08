@@ -8,5 +8,5 @@ namespace Telemetry.Contracts.Interfaces;
 /// </summary>
 public interface IEventMessageBus
 {
-    Task PublishAsync(TelemetryEvent @event, ActivityContext traceContext, CancellationToken cancellationToken);
+    Task PublishAsync(TelemetryEvent @event, ActivityContext traceContext, DateTime receivedAt, CancellationToken cancellationToken);
 }
