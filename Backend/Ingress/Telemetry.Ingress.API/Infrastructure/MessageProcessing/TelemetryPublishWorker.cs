@@ -25,6 +25,8 @@ public class TelemetryPublishWorker(
 
     private const int MaxDelayMs = 1000 * 30; // 30s
 
+    private byte[]? _lastProcessedKey = null;
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogStarted();
@@ -65,7 +67,20 @@ public class TelemetryPublishWorker(
     private async Task<bool> TryProcessNextBatchAsync(CancellationToken stoppingToken)
     {
         using var iterator = buffer.NewIterator();
-        iterator.SeekToFirst();
+
+        if (_lastProcessedKey is not null)
+        {
+            iterator.Seek(_lastProcessedKey);
+
+            if (iterator.Valid() && iterator.Key().SequenceEqual(_lastProcessedKey))
+            {
+                iterator.Next();
+            }
+        }
+        else
+        {
+            iterator.SeekToFirst();
+        }
 
         if (!iterator.Valid())
         {
