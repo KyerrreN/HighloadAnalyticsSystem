@@ -12,12 +12,12 @@ services:
       - "9092:9092"
     environment:
       KAFKA_NODE_ID: 1 # Unique ID for each broker in the cluster
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT" # Define security protocols for each listener
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT" # Defines security protocols for each listener
       KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:29092,PLAINTEXT_HOST://127.0.0.1:9092"
       KAFKA_OFFERS_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
       KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
-      KAFKA_LOG_DIRS: "/tmp/kraft-combined-logs"
-      KAFKA_PROCESS_ROLES: "broker,controller" # Define the roles for this node (both broker and controller)
+      KAFKA_LOG_DIRS: "/var/lib/kafka/data"
+      KAFKA_PROCESS_ROLES: "broker,controller" # Defines the roles for this node (both broker and controller)
       KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:29093"
       KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092"
       KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
@@ -83,13 +83,14 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: 512M
+          memory: 1G
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
     ports:
       - "4317:4317"
     depends_on:
       - tempo
+      - loki
 
   tempo:
     image: grafana/tempo:latest
