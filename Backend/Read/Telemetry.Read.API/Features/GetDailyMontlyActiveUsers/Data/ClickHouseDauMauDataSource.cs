@@ -1,7 +1,7 @@
 ﻿using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
 using Microsoft.Extensions.Options;
-using Telemetry.Read.CrossCuttingConcerns.Options;
+using Telemetry.Read.Domain.Options;
 
 namespace Telemetry.Read.API.Features.GetDailyMontlyActiveUsers.Data;
 

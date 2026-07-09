@@ -1,4 +1,4 @@
-﻿namespace Telemetry.Read.CrossCuttingConcerns.Abstractions;
+﻿namespace Telemetry.Read.Domain.Abstractions;
 
 public interface IQuery<TResponse> { }
 

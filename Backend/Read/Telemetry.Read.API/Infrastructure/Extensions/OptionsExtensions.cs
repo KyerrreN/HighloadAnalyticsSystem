@@ -1,4 +1,4 @@
-﻿using Telemetry.Read.CrossCuttingConcerns.Options;
+﻿using Telemetry.Read.Domain.Options;
 
 namespace Telemetry.Read.API.Infrastructure.Extensions;
 

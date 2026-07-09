@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Telemetry.Read.CrossCuttingConcerns.Abstractions.Decorator;
+namespace Telemetry.Read.Domain.Abstractions.Decorator;
 
 public class ValidationDecorator<TQuery, TResponse> : IQueryHandler<TQuery, TResponse>
     where TQuery : IQuery<TResponse>
