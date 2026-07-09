@@ -1,5 +1,5 @@
 ﻿using Telemetry.Read.API.Infrastructure.Endpoints;
-using Telemetry.Read.CrossCuttingConcerns.Abstractions;
+using Telemetry.Read.Domain.Abstractions;
 
 namespace Telemetry.Read.API.Features.GetEventsVolume;
 

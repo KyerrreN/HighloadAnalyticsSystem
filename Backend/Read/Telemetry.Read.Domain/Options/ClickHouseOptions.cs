@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Telemetry.Read.CrossCuttingConcerns.Options;
+namespace Telemetry.Read.Domain.Options;
 
 public class ClickHouseOptions
 {

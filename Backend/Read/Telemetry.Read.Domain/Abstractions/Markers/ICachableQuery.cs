@@ -1,4 +1,4 @@
-﻿namespace Telemetry.Read.CrossCuttingConcerns.Abstractions.Markers;
+﻿namespace Telemetry.Read.Domain.Abstractions.Markers;
 
 public interface ICachableQuery
 {

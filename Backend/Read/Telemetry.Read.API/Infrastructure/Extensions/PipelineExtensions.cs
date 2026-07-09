@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using System.Reflection;
-using Telemetry.Read.CrossCuttingConcerns.Abstractions;
-using Telemetry.Read.CrossCuttingConcerns.Abstractions.Decorator;
+using Telemetry.Read.Domain.Abstractions;
+using Telemetry.Read.Domain.Abstractions.Decorator;
 
 namespace Telemetry.Read.API.Infrastructure.Extensions;
 

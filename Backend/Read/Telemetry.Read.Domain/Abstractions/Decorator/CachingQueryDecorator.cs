@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
-using Telemetry.Read.CrossCuttingConcerns.Abstractions.Markers;
+using Telemetry.Read.Domain.Abstractions.Markers;
 
-namespace Telemetry.Read.CrossCuttingConcerns.Abstractions.Decorator;
+namespace Telemetry.Read.Domain.Abstractions.Decorator;
 
 public class CachingQueryDecorator<TQuery, TResponse> : IQueryHandler<TQuery, TResponse>
     where TQuery : IQuery<TResponse>

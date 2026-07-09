@@ -1,5 +1,5 @@
-﻿using Telemetry.Read.CrossCuttingConcerns.Abstractions;
-using Telemetry.Read.CrossCuttingConcerns.Abstractions.Markers;
+﻿using Telemetry.Read.Domain.Abstractions;
+using Telemetry.Read.Domain.Abstractions.Markers;
 
 namespace Telemetry.Read.API.Features.GetEventsVolume;
 
