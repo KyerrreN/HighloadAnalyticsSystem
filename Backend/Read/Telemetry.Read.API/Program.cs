@@ -1,4 +1,5 @@
 using Telemetry.Read.API.Infrastructure.Extensions;
+using Telemetry.Read.API.Infrastructure.Observability;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ builder.Services.AddQueryPipeline(typeof(Program).Assembly);
 
 builder.Services.RegisterCustomServices();
 builder.Services.AddSingleton(TimeProvider.System);
+builder.ConfigureOtel();
 
 var app = builder.Build();
 

@@ -24,6 +24,8 @@ public static class PipelineExtensions
 
             services.Decorate(typeof(IQueryHandler<,>), typeof(ValidationDecorator<,>));
 
+            services.Decorate(typeof(IQueryHandler<,>), typeof(ObservabilityQueryDecorator<,>));
+
             return services;
         }
     }
