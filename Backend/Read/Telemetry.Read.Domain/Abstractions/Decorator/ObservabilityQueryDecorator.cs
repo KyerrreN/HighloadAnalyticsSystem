@@ -19,7 +19,7 @@ public class ObservabilityQueryDecorator<TQuery, TResponse> : IQueryHandler<TQue
 
     public async Task<TResponse> HandleAsync(TQuery query, CancellationToken cancellationToken)
     {
-        using var activity = _activitySource.StartActivity($"Handle ${typeof(TQuery).Name}", ActivityKind.Internal);
+        using var activity = _activitySource.StartActivity($"Handle {typeof(TQuery).Name}", ActivityKind.Internal);
 
         if (query is IProjectApiQuery projectApiQuery)
         {
