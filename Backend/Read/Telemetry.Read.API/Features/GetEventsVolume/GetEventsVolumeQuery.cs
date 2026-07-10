@@ -8,7 +8,7 @@ public record GetEventsVolumeQuery(
     DateOnly From,
     DateOnly To,
     EventGranularityEnum Granularity,
-    string? EventName = null) : IQuery<GetEventsVolumeResponse>, ICachableQuery, IProjectApiQuery
+    string? EventName = null) : IQuery<GetEventsVolumeResponse>, ICachableQuery
 {
     public string CacheKey => $"events-volume:{ProjectApiKey}_from:{From:yyyyMMdd}_to:{To:yyyyMMdd}_gran:{Granularity}_event:{EventName ?? "all"}";
 

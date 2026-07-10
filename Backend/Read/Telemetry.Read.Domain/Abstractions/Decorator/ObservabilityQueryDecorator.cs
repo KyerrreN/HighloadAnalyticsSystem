@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Telemetry.Contracts.Constants;
+using Telemetry.Read.Domain.Abstractions.Enrichers;
 using Telemetry.Read.Domain.Abstractions.Markers;
 using Telemetry.Read.Domain.OpenTelemetry;
 using Telemetry.Read.Domain.Utils;
@@ -10,21 +11,26 @@ public class ObservabilityQueryDecorator<TQuery, TResponse> : IQueryHandler<TQue
     where TQuery : IQuery<TResponse>
 {
     private static readonly ActivitySource _activitySource = new(OtelConstants.ActivitySourceName);
-    private readonly IQueryHandler<TQuery, TResponse> _inner;
 
-    public ObservabilityQueryDecorator(IQueryHandler<TQuery, TResponse> inner)
+    private readonly IQueryHandler<TQuery, TResponse> _inner;
+    private readonly IEnumerable<IActivityEnricher<TQuery>> _enrichers;
+
+    public ObservabilityQueryDecorator(IQueryHandler<TQuery, TResponse> inner, IEnumerable<IActivityEnricher<TQuery>> enrichers)
     {
         _inner = inner;
+        _enrichers = enrichers;
     }
 
     public async Task<TResponse> HandleAsync(TQuery query, CancellationToken cancellationToken)
     {
         using var activity = _activitySource.StartActivity($"Handle {typeof(TQuery).Name}", ActivityKind.Internal);
 
-        if (query is IProjectApiQuery projectApiQuery)
+        if (activity is not null)
         {
-            var hashed = HashUtils.HashApiKey(projectApiQuery.ProjectApiKey);
-            activity?.SetTag(OtelTagConstants.ProjectApiKeyHash, hashed);
+            foreach (var enricher in _enrichers)
+            {
+                enricher.Enrich(activity, query);
+            }
         }
 
         try
