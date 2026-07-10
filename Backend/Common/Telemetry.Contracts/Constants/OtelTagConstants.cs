@@ -13,4 +13,7 @@ public static class OtelTagConstants
 
     // custom
     public const string TelemetryEventName = "telemetry.event_name";
+    public const string ProjectApiKeyHash = "project.api_key_hash";
+    public const string CacheStatus = "cache.status";
+    public const string CacheKey = "cache.key";
 }

@@ -14,4 +14,8 @@
     <PackageReference Include="Scrutor" Version="7.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Common\Telemetry.Contracts\Telemetry.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

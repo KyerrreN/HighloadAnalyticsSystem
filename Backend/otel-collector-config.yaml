@@ -5,6 +5,28 @@ receivers:
         endpoint: 0.0.0.0:4317
 
 processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 900
+    spike_limit_mib: 150
+
+  tail_sampling:
+    decision_wait: 10s
+    num_traces: 25000
+    expected_new_traces_per_sec: 1000
+    policies:
+      - name: always-keep-errors
+        type: status_code
+        status_code: { status_codes: [ERROR] }
+
+      - name: always-keep-slow
+        type: latency
+        latency: { threshold_ms: 1500 }
+
+      - name: sample-successful
+        type: probabilistic
+        probabilistic: { sampling_percentage: 10.0 }
+
   batch:
 
 exporters:
@@ -23,7 +45,7 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch]
+      processors: [tail_sampling, batch]
       exporters: [otlp/tempo]
     metrics:
       receivers: [otlp]

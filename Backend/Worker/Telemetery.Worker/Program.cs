@@ -23,6 +23,7 @@ builder.Services.AddOptions<ClickHouseOptions>()
 builder.ConfigureOtel();
 
 builder.Services.AddSingleton<ITelemetrySink, ClickHouseTelemetrySinc>();
+builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddHostedService<ClickHouseSetupService>();
 // todo: maybe let this service initialize kafka too. And maybe clickhouse. Maybe look into IaC

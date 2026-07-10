@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
+using System.Diagnostics;
 using System.Text.Json;
+using Telemetry.Contracts.Constants;
 using Telemetry.Read.Domain.Abstractions.Markers;
+using Telemetry.Read.Domain.OpenTelemetry;
 
 namespace Telemetry.Read.Domain.Abstractions.Decorator;
 
@@ -9,11 +12,16 @@ public class CachingQueryDecorator<TQuery, TResponse> : IQueryHandler<TQuery, TR
 {
     private readonly IQueryHandler<TQuery, TResponse> _inner;
     private readonly IDistributedCache _cache;
+    private readonly ReadApiMetrics _metrics;
 
-    public CachingQueryDecorator(IQueryHandler<TQuery, TResponse> inner, IDistributedCache cache)
+    public CachingQueryDecorator(
+        IQueryHandler<TQuery, TResponse> inner, 
+        IDistributedCache cache, 
+        ReadApiMetrics metrics)
     {
         _inner = inner;
         _cache = cache;
+        _metrics = metrics;
     }
 
     public async Task<TResponse> HandleAsync(TQuery query, CancellationToken cancellationToken)
@@ -28,8 +36,16 @@ public class CachingQueryDecorator<TQuery, TResponse> : IQueryHandler<TQuery, TR
 
         if (!string.IsNullOrEmpty(cachedString))
         {
+            _metrics.RecordCacheHit();
+
+            Activity.Current?.SetTag(OtelTagConstants.CacheStatus, "HIT");
+            Activity.Current?.SetTag(OtelTagConstants.CacheKey, cachableQuery.CacheKey);
+
             return JsonSerializer.Deserialize<TResponse>(cachedString)!;
         }
+
+        _metrics.RecordCacheMiss();
+        Activity.Current?.SetTag(OtelTagConstants.CacheStatus, "MISS");
 
         var response = await _inner.HandleAsync(query, cancellationToken);
 
