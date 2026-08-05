@@ -10,6 +10,10 @@
     <Project Path="Read/Telemetry.Read.API/Telemetry.Read.API.csproj" Id="e81fa4a1-705a-4702-9d37-bc984dd0fddd" />
     <Project Path="Read/Telemetry.Read.Domain/Telemetry.Read.Domain.csproj" />
   </Folder>
+  <Folder Name="/UserManagement/">
+    <Project Path="UserManagement/Telemetry.UserManagement.API/Telemetry.UserManagement.API.csproj" Id="40523eb2-cc96-478c-8278-d9db4ca10ba0" />
+    <Project Path="UserManagement/Telemetry.UserManagement.Infrastructure/Telemetry.UserManagement.Infrastructure.csproj" Id="fc69bebf-3f2f-42f1-ab49-5d843da556dd" />
+  </Folder>
   <Folder Name="/Worker/">
     <Project Path="Worker/Telemetery.Worker/Telemetry.Worker.csproj" Id="9263737a-0aa1-4a46-b40a-92b9c61444fe" />
   </Folder>
