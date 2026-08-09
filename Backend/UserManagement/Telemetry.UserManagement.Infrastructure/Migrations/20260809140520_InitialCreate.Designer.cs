@@ -12,7 +12,7 @@ using Telemetry.UserManagement.Infrastructure.Database;
 namespace Telemetry.UserManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260805150117_InitialCreate")]
+    [Migration("20260809140520_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -97,18 +97,7 @@ namespace Telemetry.UserManagement.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
 
                     b.ToTable("Users");
                 });
