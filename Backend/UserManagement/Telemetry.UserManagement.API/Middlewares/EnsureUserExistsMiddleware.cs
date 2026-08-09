@@ -1,0 +1,42 @@
+﻿using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using Telemetry.UserManagement.Infrastructure.Database;
+using Telemetry.UserManagement.Infrastructure.Database.Entities;
+
+namespace Telemetry.UserManagement.API.Middlewares;
+
+public class EnsureUserExistsMiddleware
+{
+    private readonly RequestDelegate _next;
+
+    public EnsureUserExistsMiddleware(RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task InvokeAsync(HttpContext context, AppDbContext dbContext)
+    {
+        if (context.User.Identity?.IsAuthenticated == true)
+        {
+            var userIdClaim = context.User.FindFirst("sub")?.Value; // todo: constants
+
+            if (Guid.TryParse(userIdClaim, out var userId))
+            {
+                var exists = await dbContext.Users.AnyAsync(u => u.Id == userId, context.RequestAborted);
+
+                if (!exists)
+                {
+                    dbContext.Users.Add(new User
+                    {
+                        Id = userId,
+                        CreatedAtUtc = DateTime.UtcNow
+                    });
+
+                    await dbContext.SaveChangesAsync(context.RequestAborted);
+                }
+            }
+        }
+
+        await _next(context);
+    }
+}
