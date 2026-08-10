@@ -7,6 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSwagger();
 builder.Services.ConfigureAuthentication(builder.Configuration);
 builder.Services.AddAuthorization();
+builder.Services.RegisterCustomServices();
+builder.Services.RegisterOptions(builder.Configuration);
+builder.Services.RegisterRefit();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -25,5 +28,7 @@ app.UseAuthentication();
 app.UseMiddleware<EnsureUserExistsMiddleware>();
 
 app.UseAuthorization();
+
+app.MapAllEndpoints();
 
 app.Run();
