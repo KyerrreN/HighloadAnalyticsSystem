@@ -21,9 +21,11 @@
       "clientId": "telemetry-management-api",
       "name": "Telemetry Management API",
       "enabled": true,
-      "publicClient": true,
+      "publicClient": false,
+      "serviceAccountsEnabled": true,
       "directAccessGrantsEnabled": true,
       "standardFlowEnabled": true,
+      "secret": "GFrh8EL8hGcZmOiolt9i95n9ug9ocSIMOIeYM7gH0SQmDoIxTMFLubBeYeA5RcSpru3Urh34rb0PBlPFa53zZi",
       "redirectUris": ["http://localhost:*"],
       "webOrigins": ["*"]
     }
@@ -43,6 +45,14 @@
         }
       ],
       "realmRoles": ["user"]
+    },
+    {
+      "username": "service-account-telemetry-management-api",
+      "enabled": true,
+      "serviceAccountClientId": "telemetry-management-api",
+      "clientRoles": {
+        "realm-management": ["manage-users"]
+      }
     }
   ]
 }
