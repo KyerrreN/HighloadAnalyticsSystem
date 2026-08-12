@@ -115,6 +115,40 @@ public class ProjectManagementService : IProjectManagementService
             return Result.Failed<ProjectDto>(ProjectErrors.FetchFailed);
         }
     }
+
+    public async Task<Result> DeleteProjectAsync(Guid ownerId, Guid projectId, CancellationToken ct = default)
+    {
+        try
+        {
+            var project = await _dbContext.Projects
+                .Include(p => p.ApiKeys)
+                .FirstOrDefaultAsync(p => p.Id == projectId && p.OwnerId == ownerId && !p.IsDeleted, ct);
+
+            if (project is null)
+            {
+                return Result.Failed(ProjectErrors.NotFound);
+            }
+
+            project.IsDeleted = true;
+
+            var now = _timeProvider.GetUtcNow().UtcDateTime;
+
+            foreach (var apiKey in project.ApiKeys)
+            {
+                apiKey.IsRevoked = true;
+                apiKey.RevokedAtUtc = now;
+            }
+
+            await _dbContext.SaveChangesAsync(ct);
+
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to delete project {ProjectId} for user {UserId}", projectId, ownerId); // todo: high-performance logging
+            return Result.Failed(ProjectErrors.DeleteFailed);
+        }
+    }
 }
 
 public interface IProjectManagementService
@@ -127,4 +161,6 @@ public interface IProjectManagementService
     Task<Result<IReadOnlyList<ProjectDto>>> GetAllProjectsAsync(Guid ownerId, CancellationToken ct = default);
 
     Task<Result<ProjectDto>> GetProjectByIdAsync(Guid ownerId, Guid projectId, CancellationToken ct = default);
+
+    Task<Result> DeleteProjectAsync(Guid ownerId, Guid projectId, CancellationToken ct = default);
 }

@@ -1,0 +1,52 @@
+﻿using System.Security.Claims;
+using Telemetry.UserManagement.API.Features.Shared.Utils;
+
+namespace Telemetry.UserManagement.API.Features.ProjectManagement.DeleteProject;
+
+public static class DeleteProjectEndpoint
+{
+    extension (IEndpointRouteBuilder endpoints)
+    {
+        public IEndpointRouteBuilder MapDeleteProjectEndpoint()
+        {
+            endpoints.MapDelete("/{id:guid}", async (
+                Guid id,
+                ClaimsPrincipal user,
+                IProjectManagementService service,
+                CancellationToken ct) =>
+            {
+                var userIdClaim = AuthUtils.GetUserIdFromClaimsPrincipal(user);
+
+                if (!Guid.TryParse(userIdClaim, out var userId))
+                {
+                    return Results.Unauthorized();
+                }
+
+                var result = await service.DeleteProjectAsync(userId, id, ct);
+
+                if (result.IsSuccess)
+                {
+                    return Results.NoContent();
+                }
+
+                return result.Error.Code switch
+                {
+                    "Project.NotFound" => Results.NotFound(new
+                    {
+                        error = result.Error.Message,
+                        code = result.Error.Code
+                    }),
+
+                    _ => Results.Problem(
+                        statusCode: StatusCodes.Status500InternalServerError,
+                        detail: result.Error.Message)
+                };
+            })
+                .WithName("DeleteProject")
+                .WithSummary("Delete project by id")
+                .WithDescription("Delete a project by id for a currently authenticated user");
+
+            return endpoints;
+        }
+    }
+}
