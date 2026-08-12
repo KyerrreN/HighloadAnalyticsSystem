@@ -1,4 +1,5 @@
 ﻿using Telemetry.UserManagement.API.Features.ProjectManagement.CreateProject;
+using Telemetry.UserManagement.API.Features.ProjectManagement.GetAllProjects;
 
 namespace Telemetry.UserManagement.API.Features.ProjectManagement;
 
@@ -13,6 +14,7 @@ public static class ProjectManagementEndpoints
                 .RequireAuthorization();
 
             group.MapCreateProjectEndpoint();
+            group.MapGetAllProjectsEndpoint();
 
             return endpoints;
         }

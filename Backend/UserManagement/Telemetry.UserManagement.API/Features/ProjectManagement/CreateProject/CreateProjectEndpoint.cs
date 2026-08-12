@@ -39,7 +39,10 @@ public static class CreateProjectEndpoint
                         statusCode: StatusCodes.Status500InternalServerError,
                         detail: response.Error.Message)
                 };
-            });
+            })
+                .WithName("CreateProject")
+                .WithSummary("Create project for user")
+                .WithDescription("Creates a project for current authenticated user");
 
             return endpoints;
         }

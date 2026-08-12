@@ -58,9 +58,33 @@ public class ProjectManagementService : IProjectManagementService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to create project {ProjectName} for user {UserId}", project.Name, ownerId);
+            _logger.LogError(ex, "Failed to create project {ProjectName} for user {UserId}", project.Name, ownerId); // todo: high-performance logging
 
             return Result.Failed<CreateProjectResponseDto>(ProjectErrors.CreationFailed);
+        }
+    }
+
+    public async Task<Result<IReadOnlyList<ProjectDto>>> GetAllProjectsAsync(Guid ownerId, CancellationToken ct = default)
+    {
+        try
+        {
+            var projects = await _dbContext.Projects
+                .AsNoTracking()
+                .Where(p => p.OwnerId == ownerId && p.IsDeleted == false)
+                .OrderByDescending(p => p.CreatedAtUtc)
+                .Select(p => new ProjectDto(
+                    p.Id,
+                    p.Name,
+                    p.Description,
+                    p.CreatedAtUtc))
+                .ToListAsync(ct);
+
+            return projects;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch projects for user {UserId}", ownerId);
+            return Result.Failed<IReadOnlyList<ProjectDto>>(ProjectErrors.FetchFailed);
         }
     }
 }
@@ -71,4 +95,6 @@ public interface IProjectManagementService
         Guid ownerId,
         CreateProjectRequestDto request,
         CancellationToken ct = default);
+
+    Task<Result<IReadOnlyList<ProjectDto>>> GetAllProjectsAsync(Guid ownerId, CancellationToken ct = default);
 }
