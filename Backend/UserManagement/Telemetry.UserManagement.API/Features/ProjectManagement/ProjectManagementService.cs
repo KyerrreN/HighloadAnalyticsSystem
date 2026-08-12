@@ -83,8 +83,36 @@ public class ProjectManagementService : IProjectManagementService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to fetch projects for user {UserId}", ownerId);
+            _logger.LogError(ex, "Failed to fetch projects for user {UserId}", ownerId); // todo: high-performance logging
             return Result.Failed<IReadOnlyList<ProjectDto>>(ProjectErrors.FetchFailed);
+        }
+    }
+
+    public async Task<Result<ProjectDto>> GetProjectByIdAsync(Guid ownerId, Guid projectId, CancellationToken ct = default)
+    {
+        try
+        {
+            var project = await _dbContext.Projects
+                .AsNoTracking()
+                .Where(p => p.Id == projectId && p.OwnerId == ownerId && p.IsDeleted == false)
+                .Select(p => new ProjectDto(
+                    p.Id,
+                    p.Name,
+                    p.Description,
+                    p.CreatedAtUtc))
+                .FirstOrDefaultAsync(ct);
+
+            if (project is null)
+            {
+                return Result.Failed<ProjectDto>(ProjectErrors.NotFound);
+            }
+
+            return project;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch project {ProjectId} for user {UserId}", projectId, ownerId); // todo: high-performance logging
+            return Result.Failed<ProjectDto>(ProjectErrors.FetchFailed);
         }
     }
 }
@@ -97,4 +125,6 @@ public interface IProjectManagementService
         CancellationToken ct = default);
 
     Task<Result<IReadOnlyList<ProjectDto>>> GetAllProjectsAsync(Guid ownerId, CancellationToken ct = default);
+
+    Task<Result<ProjectDto>> GetProjectByIdAsync(Guid ownerId, Guid projectId, CancellationToken ct = default);
 }

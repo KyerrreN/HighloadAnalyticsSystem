@@ -1,5 +1,6 @@
 ﻿using Telemetry.UserManagement.API.Features.ProjectManagement.CreateProject;
 using Telemetry.UserManagement.API.Features.ProjectManagement.GetAllProjects;
+using Telemetry.UserManagement.API.Features.ProjectManagement.GetProjectById;
 
 namespace Telemetry.UserManagement.API.Features.ProjectManagement;
 
@@ -15,6 +16,7 @@ public static class ProjectManagementEndpoints
 
             group.MapCreateProjectEndpoint();
             group.MapGetAllProjectsEndpoint();
+            group.MapGetProjectByIdEndpoint();
 
             return endpoints;
         }
