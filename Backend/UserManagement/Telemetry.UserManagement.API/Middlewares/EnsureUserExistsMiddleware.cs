@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
+using Telemetry.UserManagement.API.Features.Shared.Utils;
 using Telemetry.UserManagement.Infrastructure.Database;
 using Telemetry.UserManagement.Infrastructure.Database.Entities;
 
@@ -18,7 +18,7 @@ public class EnsureUserExistsMiddleware
     {
         if (context.User.Identity?.IsAuthenticated == true)
         {
-            var userIdClaim = context.User.FindFirst("sub")?.Value; // todo: constants
+            var userIdClaim = AuthUtils.GetUserIdFromClaimsPrincipal(context.User);
 
             if (Guid.TryParse(userIdClaim, out var userId))
             {

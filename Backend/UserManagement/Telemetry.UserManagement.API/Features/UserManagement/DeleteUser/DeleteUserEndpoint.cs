@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Telemetry.UserManagement.API.Features.Shared.Utils;
 using Telemetry.UserManagement.Infrastructure.Errors;
 
 namespace Telemetry.UserManagement.API.Features.UserManagement.DeleteUser;
@@ -14,8 +15,7 @@ public static class DeleteUserEndpoint
                 IUserManagementService userService,
                 CancellationToken ct) =>
             {
-                var userIdClaim = user.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value
-                                ?? user.FindFirst(ClaimTypes.NameIdentifier)?.Value; // todo: util class
+                var userIdClaim = AuthUtils.GetUserIdFromClaimsPrincipal(user);
 
                 if (!Guid.TryParse(userIdClaim, out var userId))
                 {

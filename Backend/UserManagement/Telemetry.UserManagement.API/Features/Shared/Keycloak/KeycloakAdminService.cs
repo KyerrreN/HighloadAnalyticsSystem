@@ -28,13 +28,6 @@ public class KeycloakAdminService : IKeycloakAdminService
                 ClientSecret = _options.ClientSecret
             };
 
-            //var request = new Dictionary<string, string>
-            //{
-            //    ["grant_type"] = "client_credentials",
-            //    ["client_id"] = _options.ClientId,
-            //    ["client_secret"] = _options.ClientSecret
-            //};
-
             var response = await _api.GetTokenAsync(_options.Realm, request, ct);
             return response.AccessToken;
         }
