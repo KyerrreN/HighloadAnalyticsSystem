@@ -31,7 +31,7 @@ public static class GetProjectByIdEndpoint
 
                 return result.Error.Code switch
                 {
-                    "ProjectErrors.NotFound" => Results.NotFound(new
+                    "Project.NotFound" => Results.NotFound(new
                     {
                         error = result.Error.Message,
                         code = result.Error.Code
