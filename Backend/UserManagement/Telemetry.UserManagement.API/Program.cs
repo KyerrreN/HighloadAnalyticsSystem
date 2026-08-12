@@ -13,6 +13,8 @@ builder.Services.RegisterRefit();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
+builder.Services.AddSingleton(TimeProvider.System);
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

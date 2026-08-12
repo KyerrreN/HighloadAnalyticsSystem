@@ -1,4 +1,5 @@
-﻿using Telemetry.UserManagement.API.Features.Shared.Keycloak;
+﻿using Telemetry.UserManagement.API.Features.ProjectManagement;
+using Telemetry.UserManagement.API.Features.Shared.Keycloak;
 using Telemetry.UserManagement.API.Features.UserManagement;
 
 namespace Telemetry.UserManagement.API.Extensions;
@@ -11,6 +12,7 @@ public static class RegisterServices
         {
             services.AddScoped<IKeycloakAdminService, KeycloakAdminService>();
             services.AddScoped<IUserManagementService, UserManagementService>();
+            services.AddScoped<IProjectManagementService, ProjectManagementService>();
 
             return services;
         }
