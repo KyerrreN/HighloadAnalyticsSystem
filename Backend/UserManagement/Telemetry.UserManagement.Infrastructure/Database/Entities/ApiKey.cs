@@ -10,6 +10,8 @@ public class ApiKey
     public DateTime CreatedAtUtc { get; set; }
     public bool IsRevoked { get; set; }
     public DateTime? RevokedAtUtc { get; set; }
+    public DateTime? ExpiresAtUtc { get; set; }
+    public DateTime? LastUsedAtUtc { get; set; }
 
     public Project Project { get; set; } = null!;
 }

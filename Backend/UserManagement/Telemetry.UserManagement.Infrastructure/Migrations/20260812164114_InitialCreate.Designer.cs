@@ -12,7 +12,7 @@ using Telemetry.UserManagement.Infrastructure.Database;
 namespace Telemetry.UserManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260812145700_InitialCreate")]
+    [Migration("20260812164114_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -34,12 +34,18 @@ namespace Telemetry.UserManagement.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("ExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<bool>("IsRevoked")
                         .HasColumnType("boolean");
 
                     b.Property<string>("KeyHash")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime?>("LastUsedAtUtc")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
                         .IsRequired()

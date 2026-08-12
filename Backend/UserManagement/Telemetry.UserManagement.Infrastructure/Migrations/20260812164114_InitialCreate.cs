@@ -56,7 +56,9 @@ namespace Telemetry.UserManagement.Infrastructure.Migrations
                     KeyHash = table.Column<string>(type: "text", nullable: false),
                     CreatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     IsRevoked = table.Column<bool>(type: "boolean", nullable: false),
-                    RevokedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    RevokedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ExpiresAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    LastUsedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
