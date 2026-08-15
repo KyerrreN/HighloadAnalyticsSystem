@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Telemetry.UserManagement.API.Features.Shared;
 using Telemetry.UserManagement.API.Features.Shared.Utils;
 using Telemetry.UserManagement.Infrastructure.Errors;
 
@@ -11,18 +12,11 @@ public static class DeleteUserEndpoint
         public IEndpointRouteBuilder MapDeleteUserEndpoint()
         {
             endpoints.MapDelete("/me", async (
-                ClaimsPrincipal user,
+                CurrentUser user,
                 IUserManagementService userService,
                 CancellationToken ct) =>
             {
-                var userIdClaim = AuthUtils.GetUserIdFromClaimsPrincipal(user);
-
-                if (!Guid.TryParse(userIdClaim, out var userId))
-                {
-                    return Results.Unauthorized();
-                }
-
-                var result = await userService.DeleteUserAsync(userId, ct);
+                var result = await userService.DeleteUserAsync(user.Id, ct);
 
                 if (result.IsSuccess)
                 {

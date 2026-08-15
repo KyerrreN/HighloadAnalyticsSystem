@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Telemetry.UserManagement.API.Features.Shared;
 using Telemetry.UserManagement.API.Features.Shared.Utils;
 
 namespace Telemetry.UserManagement.API.Features.ProjectManagement.GetProjectById;
@@ -11,18 +12,11 @@ public static class GetProjectByIdEndpoint
         {
             endpoints.MapGet("/{id:guid}", async (
                 Guid id,
-                ClaimsPrincipal user,
+                CurrentUser user,
                 IProjectManagementService service,
                 CancellationToken ct) =>
             {
-                var userIdClaim = AuthUtils.GetUserIdFromClaimsPrincipal(user);
-
-                if (!Guid.TryParse(userIdClaim, out var userId))
-                {
-                    return Results.Unauthorized();
-                }
-
-                var result = await service.GetProjectByIdAsync(userId, id, ct);
+                var result = await service.GetProjectByIdAsync(user.Id, id, ct);
 
                 if (result.IsSuccess)
                 {

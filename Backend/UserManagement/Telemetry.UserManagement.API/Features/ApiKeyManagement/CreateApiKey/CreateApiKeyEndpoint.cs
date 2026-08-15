@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Telemetry.UserManagement.API.Features.Shared;
 using Telemetry.UserManagement.API.Features.Shared.Utils;
 
 namespace Telemetry.UserManagement.API.Features.ApiKeyManagement.CreateApiKey;
@@ -11,20 +12,12 @@ public static class CreateApiKeyEndpoint
         {
             endpoints.MapPost("/{projectId:guid}/keys", async (
                 Guid projectId,
-                ClaimsPrincipal user,
+                CurrentUser user,
                 CreateApiKeyRequest dto,
                 IApiKeyManagementService service,
                 CancellationToken ct) =>
             {
-                // todo: validation
-                var userIdClaim = AuthUtils.GetUserIdFromClaimsPrincipal(user);
-
-                if (!Guid.TryParse(userIdClaim, out var userId))
-                {
-                    return Results.Unauthorized();
-                }
-
-                var response = await service.CreateApiKeyAsync(userId, projectId, dto, ct);
+                var response = await service.CreateApiKeyAsync(user.Id, projectId, dto, ct);
 
                 if (response.IsSuccess)
                 {

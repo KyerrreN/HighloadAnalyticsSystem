@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Telemetry.UserManagement.API.Features.Shared;
 using Telemetry.UserManagement.API.Features.Shared.Utils;
 using Telemetry.UserManagement.Infrastructure.Database.Entities;
 
@@ -12,18 +13,11 @@ public static class GetApiKeysForProjectEndpoint
         {
             endpoints.MapGet("/{projectId:guid}/keys", async (
                 Guid projectId,
-                ClaimsPrincipal user,
+                CurrentUser user,
                 IApiKeyManagementService service,
                 CancellationToken ct) =>
             {
-                var userIdClaim = AuthUtils.GetUserIdFromClaimsPrincipal(user);
-
-                if (!Guid.TryParse(userIdClaim, out var userId))
-                {
-                    return Results.Unauthorized();
-                }
-
-                var result = await service.GetApiKeysForProjectAsync(userId, projectId, ct);
+                var result = await service.GetApiKeysForProjectAsync(user.Id, projectId, ct);
 
                 if (result.IsSuccess)
                 {

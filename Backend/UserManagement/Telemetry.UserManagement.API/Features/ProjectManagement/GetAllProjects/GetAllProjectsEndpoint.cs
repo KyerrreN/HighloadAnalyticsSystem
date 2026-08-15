@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Telemetry.UserManagement.API.Features.Shared;
 using Telemetry.UserManagement.API.Features.Shared.Utils;
 
 namespace Telemetry.UserManagement.API.Features.ProjectManagement.GetAllProjects;
@@ -11,17 +12,10 @@ public static class GetAllProjectsEndpoint
         {
             endpoints.MapGet("/", async (
                 IProjectManagementService service,
-                ClaimsPrincipal user,
+                CurrentUser user,
                 CancellationToken ct) =>
             {
-                var userIdClaim = AuthUtils.GetUserIdFromClaimsPrincipal(user);
-
-                if (!Guid.TryParse(userIdClaim, out var userId))
-                {
-                    return Results.Unauthorized();
-                }
-
-                var response = await service.GetAllProjectsAsync(userId, ct);
+                var response = await service.GetAllProjectsAsync(user.Id, ct);
 
                 if (response.IsSuccess)
                 {

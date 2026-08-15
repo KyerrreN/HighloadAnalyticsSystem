@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Telemetry.UserManagement.API.Features.Shared;
 using Telemetry.UserManagement.API.Features.Shared.Utils;
 
 namespace Telemetry.UserManagement.API.Features.ApiKeyManagement.RevokeApiKey;
@@ -12,18 +13,11 @@ public static class RevokeApiKeyEndpoint
             endpoints.MapDelete("/{projectId:guid}/keys/{keyId:guid}", async (
                 Guid projectId,
                 Guid keyId,
-                ClaimsPrincipal user,
+                CurrentUser user,
                 IApiKeyManagementService apiKeyService,
                 CancellationToken ct) =>
             {
-                var userIdClaim = AuthUtils.GetUserIdFromClaimsPrincipal(user);
-
-                if (!Guid.TryParse(userIdClaim, out var userId))
-                {
-                    return Results.Unauthorized();
-                }
-
-                var result = await apiKeyService.RevokeApiKeyAsync(projectId, keyId, userId, ct);
+                var result = await apiKeyService.RevokeApiKeyAsync(projectId, keyId, user.Id, ct);
 
                 if (result.IsSuccess)
                 {

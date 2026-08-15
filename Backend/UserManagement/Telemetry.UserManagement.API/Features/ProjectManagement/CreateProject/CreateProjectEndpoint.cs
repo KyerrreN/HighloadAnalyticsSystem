@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Telemetry.UserManagement.API.Features.Shared;
 using Telemetry.UserManagement.API.Features.Shared.Utils;
 
 namespace Telemetry.UserManagement.API.Features.ProjectManagement.CreateProject;
@@ -11,19 +12,13 @@ public static class CreateProjectEndpoint
         {
             endpoints.MapPost("/", async (
                 CreateProjectRequestDto request,
-                ClaimsPrincipal user,
+                CurrentUser user,
                 IProjectManagementService service,
                 CancellationToken ct) =>
             {
                 // todo: validation
-                var userIdClaim = AuthUtils.GetUserIdFromClaimsPrincipal(user);
 
-                if (!Guid.TryParse(userIdClaim, out var userId))
-                {
-                    return Results.Unauthorized();
-                }
-
-                var response = await service.CreateProjectAsync(userId, request, ct);
+                var response = await service.CreateProjectAsync(user.Id, request, ct);
 
                 if (response.IsSuccess)
                 {
