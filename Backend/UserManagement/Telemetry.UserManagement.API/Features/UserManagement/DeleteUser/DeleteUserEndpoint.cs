@@ -28,7 +28,7 @@ public static class DeleteUserEndpoint
                     return Results.NotFound(new { error = result.Error.Message });
                 }
 
-                return Results.Problem(statusCode: StatusCodes.Status500InternalServerError, detail: result.Error.Message); // todo: for user, no need to return details of our error
+                return Results.Problem(statusCode: StatusCodes.Status500InternalServerError, detail: result.Error.Message);
             })
                 .WithName("DeleteCurrentUser")
                 .WithSummary("Delete current user account and all associated data");

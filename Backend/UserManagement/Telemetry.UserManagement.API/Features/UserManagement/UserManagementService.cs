@@ -2,6 +2,7 @@
 using Telemetry.UserManagement.Infrastructure.Database;
 using Telemetry.UserManagement.Infrastructure.Errors;
 using Telemetry.UserManagement.Infrastructure.Result;
+using Telemetry.UserManagement.Infrastructure.Logging;
 
 namespace Telemetry.UserManagement.API.Features.UserManagement;
 
@@ -49,7 +50,7 @@ public class UserManagementService : IUserManagementService
         {
             await transaction.RollbackAsync(ct);
 
-            _logger.LogError(ex, "A database or unexpected error occurred while deleting user {userId}", userId); // todo: high-performance logging
+            _logger.LogUserDeletionFailed(ex, userId);
 
             return Result.Failed(UserErrors.DeletionFailed);
         }

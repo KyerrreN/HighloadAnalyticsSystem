@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Refit;
+using Telemetry.UserManagement.Infrastructure.Logging;
 using Telemetry.UserManagement.API.Features.ApiKeyManagement.CreateApiKey;
 using Telemetry.UserManagement.Infrastructure.Database;
 using Telemetry.UserManagement.Infrastructure.Database.Entities;
@@ -69,7 +69,7 @@ public class ApiKeyManagementService : IApiKeyManagementService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to create API key {KeyName} for project {ProjectId}", request.Name, projectId); // high-performance logging
+            _logger.LogApiKeyCreationFailed(ex, request.Name, projectId);
             return Result.Failed<CreateApiKeyResponse>(ApiKeyErrors.CreationFailed);
         }
     }
@@ -106,7 +106,7 @@ public class ApiKeyManagementService : IApiKeyManagementService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to fetch API keys for project {ProjectId}", projectId); // todo: high-performance logging
+            _logger.LogApiKeyFetchFailed(ex, projectId);
             return Result.Failed<IReadOnlyList<ApiKeyDto>>(ApiKeyErrors.FetchFailed);
         }
     }
@@ -139,7 +139,7 @@ public class ApiKeyManagementService : IApiKeyManagementService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to revoke API key {KeyId} for project {ProjectId}", keyId, projectId); // todo: high-performance logging
+            _logger.LogApiKeyRevokeFailed(ex, keyId, projectId);
             return Result.Failed(ApiKeyErrors.RevokeFailed);
         }
     }

@@ -3,6 +3,7 @@ using Telemetry.UserManagement.API.Features.ProjectManagement.CreateProject;
 using Telemetry.UserManagement.Infrastructure.Database;
 using Telemetry.UserManagement.Infrastructure.Database.Entities;
 using Telemetry.UserManagement.Infrastructure.Result;
+using Telemetry.UserManagement.Infrastructure.Logging;
 
 namespace Telemetry.UserManagement.API.Features.ProjectManagement;
 
@@ -58,7 +59,7 @@ public class ProjectManagementService : IProjectManagementService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to create project {ProjectName} for user {UserId}", project.Name, ownerId); // todo: high-performance logging
+            _logger.LogProjectCreationFailed(ex, project.Name, ownerId);
 
             return Result.Failed<CreateProjectResponseDto>(ProjectErrors.CreationFailed);
         }
@@ -83,7 +84,7 @@ public class ProjectManagementService : IProjectManagementService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to fetch projects for user {UserId}", ownerId); // todo: high-performance logging
+            _logger.LogProjectFetchFailed(ex, ownerId);
             return Result.Failed<IReadOnlyList<ProjectDto>>(ProjectErrors.FetchFailed);
         }
     }
@@ -111,7 +112,7 @@ public class ProjectManagementService : IProjectManagementService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to fetch project {ProjectId} for user {UserId}", projectId, ownerId); // todo: high-performance logging
+            _logger.LogProjectByIdFetchFailed(ex, projectId, ownerId);
             return Result.Failed<ProjectDto>(ProjectErrors.FetchFailed);
         }
     }
@@ -145,7 +146,7 @@ public class ProjectManagementService : IProjectManagementService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to delete project {ProjectId} for user {UserId}", projectId, ownerId); // todo: high-performance logging
+            _logger.LogProjectDeletionFailed(ex, projectId, ownerId);
             return Result.Failed(ProjectErrors.DeleteFailed);
         }
     }
