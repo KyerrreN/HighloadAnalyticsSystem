@@ -30,10 +30,10 @@ public static class CreateProjectEndpoint
                     return Results.Created($"/api/projects/{response.Value!.Id}", response.Value);
                 }
 
-                return response.Error.Code switch
+                return response switch
                 {
-                    "Project.EmptyName" or "Project.AlreadyExists" =>
-                        Results.BadRequest(new { error = response.Error.Message, code = response.Error.Code }),
+                    { Error: var err } when err == ProjectErrors.EmptyName || err == ProjectErrors.AlreadyExists =>
+                        Results.BadRequest(new { error = err.Message, code = err.Code }),
 
                     _ => Results.Problem(
                         statusCode: StatusCodes.Status500InternalServerError,

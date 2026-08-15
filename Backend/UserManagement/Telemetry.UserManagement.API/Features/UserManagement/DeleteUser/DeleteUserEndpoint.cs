@@ -23,12 +23,15 @@ public static class DeleteUserEndpoint
                     return Results.NoContent();
                 }
 
-                if (result.Error == UserErrors.NotFound)
+                return result switch
                 {
-                    return Results.NotFound(new { error = result.Error.Message });
-                }
+                    { Error: var err } when err == UserErrors.NotFound =>
+                        Results.NotFound(new { error = err.Message, code = err.Code }),
 
-                return Results.Problem(statusCode: StatusCodes.Status500InternalServerError, detail: result.Error.Message);
+                    _ => Results.Problem(
+                        statusCode: StatusCodes.Status500InternalServerError,
+                        detail: result.Error.Message)
+                };
             })
                 .WithName("DeleteCurrentUser")
                 .WithSummary("Delete current user account and all associated data");

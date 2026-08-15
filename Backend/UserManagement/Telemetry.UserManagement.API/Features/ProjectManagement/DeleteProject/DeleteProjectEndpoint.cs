@@ -23,13 +23,10 @@ public static class DeleteProjectEndpoint
                     return Results.NoContent();
                 }
 
-                return result.Error.Code switch
+                return result switch
                 {
-                    "Project.NotFound" => Results.NotFound(new
-                    {
-                        error = result.Error.Message,
-                        code = result.Error.Code
-                    }),
+                    { Error: var err } when err == ProjectErrors.NotFound =>
+                        Results.NotFound(new { error = err.Message, code = err.Code }),
 
                     _ => Results.Problem(
                         statusCode: StatusCodes.Status500InternalServerError,

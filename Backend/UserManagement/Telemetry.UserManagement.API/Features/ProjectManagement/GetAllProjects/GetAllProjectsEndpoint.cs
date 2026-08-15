@@ -22,7 +22,7 @@ public static class GetAllProjectsEndpoint
                     return Results.Ok(response.Value);
                 }
 
-                return response.Error.Code switch
+                return response switch
                 {
                     _ => Results.Problem(statusCode: StatusCodes.Status500InternalServerError, detail: response.Error.Message)
                 };
