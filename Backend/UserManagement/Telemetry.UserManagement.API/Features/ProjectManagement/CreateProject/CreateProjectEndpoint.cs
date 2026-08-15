@@ -1,6 +1,5 @@
-﻿using System.Security.Claims;
+﻿using FluentValidation;
 using Telemetry.UserManagement.API.Features.Shared;
-using Telemetry.UserManagement.API.Features.Shared.Utils;
 
 namespace Telemetry.UserManagement.API.Features.ProjectManagement.CreateProject;
 
@@ -12,11 +11,17 @@ public static class CreateProjectEndpoint
         {
             endpoints.MapPost("/", async (
                 CreateProjectRequestDto request,
+                IValidator<CreateProjectRequestDto> validator,
                 CurrentUser user,
                 IProjectManagementService service,
                 CancellationToken ct) =>
             {
-                // todo: validation
+                var validationResult = await validator.ValidateAsync(request, ct);
+
+                if (!validationResult.IsValid)
+                {
+                    return Results.ValidationProblem(validationResult.ToDictionary());
+                }
 
                 var response = await service.CreateProjectAsync(user.Id, request, ct);
 

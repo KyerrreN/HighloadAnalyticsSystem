@@ -1,3 +1,4 @@
+using FluentValidation;
 using Telemetry.UserManagement.API.Extensions;
 using Telemetry.UserManagement.API.Middlewares;
 using Telemetry.UserManagement.Infrastructure.DI;
@@ -10,6 +11,7 @@ builder.Services.AddAuthorization();
 builder.Services.RegisterCustomServices();
 builder.Services.RegisterOptions(builder.Configuration);
 builder.Services.RegisterRefit();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 

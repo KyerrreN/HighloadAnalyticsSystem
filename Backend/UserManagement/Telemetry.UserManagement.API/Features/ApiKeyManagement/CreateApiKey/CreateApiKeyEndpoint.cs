@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using FluentValidation;
+using System.Security.Claims;
 using Telemetry.UserManagement.API.Features.Shared;
 using Telemetry.UserManagement.API.Features.Shared.Utils;
 
@@ -13,10 +14,18 @@ public static class CreateApiKeyEndpoint
             endpoints.MapPost("/{projectId:guid}/keys", async (
                 Guid projectId,
                 CurrentUser user,
+                IValidator<CreateApiKeyRequest> validator,
                 CreateApiKeyRequest dto,
                 IApiKeyManagementService service,
                 CancellationToken ct) =>
             {
+                var validationResult = await validator.ValidateAsync(dto, ct);
+
+                if (!validationResult.IsValid)
+                {
+                    return Results.ValidationProblem(validationResult.ToDictionary());
+                }
+
                 var response = await service.CreateApiKeyAsync(user.Id, projectId, dto, ct);
 
                 if (response.IsSuccess)
@@ -26,9 +35,6 @@ public static class CreateApiKeyEndpoint
 
                 return response switch
                 {
-                    { Error: var err } when err == ApiKeyErrors.EmptyName =>
-                    Results.BadRequest(new { error = err.Message, code = err.Code }),
-
                     { Error: var err } when err == ApiKeyErrors.ProjectNotFound =>
                         Results.NotFound(new { error = err.Message, code = err.Code }),
 

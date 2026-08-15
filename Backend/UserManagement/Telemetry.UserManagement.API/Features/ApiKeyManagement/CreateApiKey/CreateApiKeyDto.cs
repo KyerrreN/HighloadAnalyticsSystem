@@ -2,7 +2,7 @@
 
 public record CreateApiKeyRequest(
     string Name,
-    DateTime ExpiresAtUtc); // todo: maybe enum with presets?
+    DateTime ExpiresAtUtc);
 
 public record CreateApiKeyResponse(
     Guid Id,

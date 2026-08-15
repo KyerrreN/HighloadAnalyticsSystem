@@ -28,11 +28,6 @@ public class ApiKeyManagementService : IApiKeyManagementService
 
     public async Task<Result<CreateApiKeyResponse>> CreateApiKeyAsync(Guid ownerId, Guid projectId, CreateApiKeyRequest request, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(request.Name)) // todo: move to validation
-        {
-            return Result.Failed<CreateApiKeyResponse>(ApiKeyErrors.EmptyName);
-        }
-
         var projectExists = await _dbContext.Projects
             .AnyAsync(p => p.Id == projectId && p.OwnerId == ownerId && !p.IsDeleted, ct);
 
