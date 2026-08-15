@@ -73,6 +73,43 @@ public class ApiKeyManagementService : IApiKeyManagementService
             return Result.Failed<CreateApiKeyResponse>(ApiKeyErrors.CreationFailed);
         }
     }
+
+    public async Task<Result<IReadOnlyList<ApiKeyDto>>> GetApiKeysForProjectAsync(Guid ownerId, Guid projectId, CancellationToken ct = default)
+    {
+        try
+        {
+            var isProjectExist = await _dbContext.Projects
+    .AsNoTracking()
+    .AnyAsync(p => p.OwnerId == ownerId && p.Id == projectId && !p.IsDeleted, ct);
+
+            if (!isProjectExist)
+            {
+                return Result.Failed<IReadOnlyList<ApiKeyDto>>(ApiKeyErrors.ProjectNotFound);
+            }
+
+            var keys = await _dbContext.ApiKeys
+                .AsNoTracking()
+                .Where(a => a.ProjectId == projectId && !a.IsRevoked)
+                .OrderByDescending(a => a.CreatedAtUtc)
+                .Select(a => new ApiKeyDto(
+                    a.Id,
+                    a.ProjectId,
+                    a.Name,
+                    a.Prefix,
+                    a.IsRevoked,
+                    a.CreatedAtUtc,
+                    a.ExpiresAtUtc,
+                    a.LastUsedAtUtc))
+                .ToListAsync(ct);
+
+            return keys;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch API keys for project {ProjectId}", projectId); // todo: high-performance logging
+            return Result.Failed<IReadOnlyList<ApiKeyDto>>(ApiKeyErrors.FetchFailed);
+        }
+    }
 }
 
 public interface IApiKeyManagementService
@@ -81,5 +118,10 @@ public interface IApiKeyManagementService
         Guid ownerId,
         Guid projectId,
         CreateApiKeyRequest request,
+        CancellationToken ct = default);
+
+    Task<Result<IReadOnlyList<ApiKeyDto>>> GetApiKeysForProjectAsync(
+        Guid ownerId,
+        Guid projectId,
         CancellationToken ct = default);
 }

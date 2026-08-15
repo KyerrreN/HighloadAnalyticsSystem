@@ -1,4 +1,5 @@
 ﻿using Telemetry.UserManagement.API.Features.ApiKeyManagement.CreateApiKey;
+using Telemetry.UserManagement.API.Features.ApiKeyManagement.GetApiKeysForProject;
 
 namespace Telemetry.UserManagement.API.Features.ApiKeyManagement;
 
@@ -14,6 +15,7 @@ public static class ApiKeyManagementEndpoints
                 .RequireAuthorization();
 
             group.MapCreateApiKeyEndpoint();
+            group.MapGetApiKeysForProjectEndpoint();
 
             return endpoints;
         }
