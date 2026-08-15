@@ -9,7 +9,7 @@ builder.Services.AddSwagger();
 builder.Services.ConfigureAuthentication(builder.Configuration);
 builder.Services.AddAuthorization();
 builder.Services.RegisterCustomServices();
-builder.Services.RegisterOptions(builder.Configuration);
+builder.Services.RegisterOptions();
 builder.Services.RegisterRefit();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 

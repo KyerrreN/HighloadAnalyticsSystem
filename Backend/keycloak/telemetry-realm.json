@@ -27,7 +27,20 @@
       "standardFlowEnabled": true,
       "secret": "GFrh8EL8hGcZmOiolt9i95n9ug9ocSIMOIeYM7gH0SQmDoIxTMFLubBeYeA5RcSpru3Urh34rb0PBlPFa53zZi",
       "redirectUris": ["http://localhost:*"],
-      "webOrigins": ["*"]
+      "webOrigins": ["*"],
+      "protocolMappers": [
+        {
+          "name": "aud-mapper-telemetry-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "telemetry-management-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
     }
   ],
   "users": [

@@ -6,9 +6,12 @@ public static class RegisterOptionsPattern
 {
     extension (IServiceCollection services)
     {
-        public IServiceCollection RegisterOptions(IConfiguration configuration)
+        public IServiceCollection RegisterOptions()
         {
-            services.Configure<KeycloakOptions>(configuration.GetSection(KeycloakOptions.SectionName));
+            services.AddOptions<KeycloakOptions>()
+                .BindConfiguration(KeycloakOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
             return services;
         }

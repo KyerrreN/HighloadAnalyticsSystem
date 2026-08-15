@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Telemetry.UserManagement.API.Options;
 
 namespace Telemetry.UserManagement.API.Extensions;
 
@@ -9,20 +10,31 @@ public static class ConfigureAuth
     {
         public IServiceCollection ConfigureAuthentication(IConfiguration configuration)
         {
+            var keycloakOptions = configuration
+                .GetSection(KeycloakOptions.SectionName)
+                .Get<KeycloakOptions>()
+                ?? throw new InvalidOperationException($"Section '{KeycloakOptions.SectionName}' is missing.");
+
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
-                    var authority = configuration["Keycloak:Authority"]; // todo: strongly typed
-                    var requireHttps = configuration.GetValue<bool>("Keycloak:RequireHttpsMetadata"); // todo: strongly typed
-
-                    options.Authority = authority;
-                    options.RequireHttpsMetadata = requireHttps;
+                    options.Authority = keycloakOptions.Authority;
+                    options.RequireHttpsMetadata = keycloakOptions.RequireHttpsMetadata;
 
                     options.MapInboundClaims = false;
 
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
-                        ValidateAudience = false, // todo: toggle
+                        ValidateAudience = true,
+                        ValidAudience = keycloakOptions.Audience,
+
+                        ValidateIssuer = true,
+                        ValidIssuer = keycloakOptions.Authority,
+
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        RequireSignedTokens = true,
+
                         NameClaimType = "preferred_username",
                         RoleClaimType = "roles"
                     };
