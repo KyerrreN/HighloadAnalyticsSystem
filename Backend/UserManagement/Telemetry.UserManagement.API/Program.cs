@@ -2,6 +2,7 @@ using FluentValidation;
 using Telemetry.UserManagement.API.Extensions;
 using Telemetry.UserManagement.API.Middlewares;
 using Telemetry.UserManagement.Infrastructure.DI;
+using Telemetry.UserManagement.Infrastructure.OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ builder.Services.RegisterCustomServices();
 builder.Services.RegisterOptions();
 builder.Services.RegisterRefit();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.ConfigureOtel();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
