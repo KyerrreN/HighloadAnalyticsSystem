@@ -1,0 +1,53 @@
+﻿using FluentValidation;
+using System.Security.Claims;
+using Telemetry.UserManagement.API.Features.Shared;
+using Telemetry.UserManagement.API.Features.Shared.Utils;
+
+namespace Telemetry.UserManagement.API.Features.ApiKeyManagement.CreateApiKey;
+
+public static class CreateApiKeyEndpoint
+{
+    extension (IEndpointRouteBuilder endpoints)
+    {
+        public IEndpointRouteBuilder MapCreateApiKeyEndpoint()
+        {
+            endpoints.MapPost("/{projectId:guid}/keys", async (
+                Guid projectId,
+                CurrentUser user,
+                IValidator<CreateApiKeyRequest> validator,
+                CreateApiKeyRequest dto,
+                IApiKeyManagementService service,
+                CancellationToken ct) =>
+            {
+                var validationResult = await validator.ValidateAsync(dto, ct);
+
+                if (!validationResult.IsValid)
+                {
+                    return Results.ValidationProblem(validationResult.ToDictionary());
+                }
+
+                var response = await service.CreateApiKeyAsync(user.Id, projectId, dto, ct);
+
+                if (response.IsSuccess)
+                {
+                    return Results.Created($"/api/projects/{projectId}/keys/{response.Value!.Id}", response.Value);
+                }
+
+                return response switch
+                {
+                    { Error: var err } when err == ApiKeyErrors.ProjectNotFound =>
+                        Results.NotFound(new { error = err.Message, code = err.Code }),
+
+                    _ => Results.Problem(
+                        statusCode: StatusCodes.Status500InternalServerError,
+                        detail: response.Error.Message)
+                };
+            })
+                .WithName("CreateApiKey")
+                .WithSummary("Generate a new API key for project")
+                .WithDescription("Generates a new API key. The raw key is returned ONLY once in the response!"); 
+            
+            return endpoints;
+        }
+    }
+}
