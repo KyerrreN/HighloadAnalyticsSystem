@@ -79,8 +79,8 @@ public class ApiKeyManagementService : IApiKeyManagementService
         try
         {
             var isProjectExist = await _dbContext.Projects
-    .AsNoTracking()
-    .AnyAsync(p => p.OwnerId == ownerId && p.Id == projectId && !p.IsDeleted, ct);
+                .AsNoTracking()
+                .AnyAsync(p => p.OwnerId == ownerId && p.Id == projectId && !p.IsDeleted, ct);
 
             if (!isProjectExist)
             {
@@ -110,6 +110,39 @@ public class ApiKeyManagementService : IApiKeyManagementService
             return Result.Failed<IReadOnlyList<ApiKeyDto>>(ApiKeyErrors.FetchFailed);
         }
     }
+
+    public async Task<Result> RevokeApiKeyAsync(Guid projectId, Guid keyId, Guid ownerId, CancellationToken ct = default)
+    {
+        try
+        {
+            var apiKey = await _dbContext.ApiKeys
+                .Include(k => k.Project)
+                .FirstOrDefaultAsync(k => 
+                    k.Id == keyId
+                    && k.ProjectId == projectId
+                    && k.Project.OwnerId == ownerId
+                    && !k.Project.IsDeleted, ct);
+
+            if (apiKey is null)
+            {
+                return Result.Failed(ApiKeyErrors.NotFound);
+            }
+
+            if (!apiKey.IsRevoked)
+            {
+                apiKey.IsRevoked = true;
+                apiKey.RevokedAtUtc = _timeProvider.GetUtcNow().UtcDateTime;
+                await _dbContext.SaveChangesAsync(ct);
+            }
+
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to revoke API key {KeyId} for project {ProjectId}", keyId, projectId); // todo: high-performance logging
+            return Result.Failed(ApiKeyErrors.RevokeFailed);
+        }
+    }
 }
 
 public interface IApiKeyManagementService
@@ -123,5 +156,11 @@ public interface IApiKeyManagementService
     Task<Result<IReadOnlyList<ApiKeyDto>>> GetApiKeysForProjectAsync(
         Guid ownerId,
         Guid projectId,
+        CancellationToken ct = default);
+
+    Task<Result> RevokeApiKeyAsync(
+        Guid projectId,
+        Guid keyId,
+        Guid ownerId,
         CancellationToken ct = default);
 }
