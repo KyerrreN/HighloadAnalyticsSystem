@@ -1,0 +1,63 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse-dev
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 2048M
+    environment:
+      - CLICKHOUSE_USER=admin
+      - CLICKHOUSE_PASSWORD=SuperCoolPassword123!
+      - CLICKHOUSE_DB=telemetry
+      - TZ=UTC
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    networks:
+      - telemetry-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "clickhouse-client",
+          "--user",
+          "admin",
+          "--password",
+          "SuperCoolPassword123!",
+          "-q",
+          "SELECT 1",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  user-management-db:
+    image: postgres:16-alpine
+    container_name: user-management-db
+    environment:
+      POSTGRES_DB: telemetry_user_management
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_db_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - user_management_postgres_data:/var/lib/postgresql/data
+    networks:
+      - telemetry-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  clickhouse_data:
+  user_management_postgres_data:
+
+networks:
+  telemetry-network:
