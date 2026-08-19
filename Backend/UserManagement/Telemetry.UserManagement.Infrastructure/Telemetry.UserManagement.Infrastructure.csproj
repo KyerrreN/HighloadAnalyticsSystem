@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Common\Telemetry.Contracts\Telemetry.Contracts.csproj" />
     <ProjectReference Include="..\..\Common\Telemetry.Shared.Observability\Telemetry.Shared.Observability.csproj" />
   </ItemGroup>
 

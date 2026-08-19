@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using Telemetry.Contracts.Interfaces;
+using Telemetry.Contracts.Utils;
 using Telemetry.Ingress.API.Infrastructure.MessageProcessing;
 using Telemetry.Ingress.API.Infrastructure.Options;
 using Telemetry.Ingress.API.Infrastructure.Services;
@@ -36,6 +37,8 @@ public static class Services
 
                 return new LocalBufferService(dbPath);
             });
+
+            services.AddSingleton<IApiKeyHasher, ApiKeyHasher>();
 
             return services;
         }

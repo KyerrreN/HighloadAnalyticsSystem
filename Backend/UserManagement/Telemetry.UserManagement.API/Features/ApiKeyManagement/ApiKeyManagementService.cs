@@ -4,6 +4,7 @@ using Telemetry.UserManagement.API.Features.ApiKeyManagement.CreateApiKey;
 using Telemetry.UserManagement.Infrastructure.Database;
 using Telemetry.UserManagement.Infrastructure.Database.Entities;
 using Telemetry.UserManagement.Infrastructure.Result;
+using Telemetry.Contracts.Interfaces;
 
 namespace Telemetry.UserManagement.API.Features.ApiKeyManagement;
 
@@ -13,17 +14,20 @@ public class ApiKeyManagementService : IApiKeyManagementService
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<ApiKeyManagementService> _logger;
     private readonly IApiKeyGenerator _apiKeyGenerator;
+    private readonly IApiKeyHasher _apiKeyHasher;
 
     public ApiKeyManagementService(
-        AppDbContext dbContext, 
-        TimeProvider timeProvider, 
-        ILogger<ApiKeyManagementService> logger, 
-        IApiKeyGenerator apiKeyGenerator)
+        AppDbContext dbContext,
+        TimeProvider timeProvider,
+        ILogger<ApiKeyManagementService> logger,
+        IApiKeyGenerator apiKeyGenerator,
+        IApiKeyHasher apiKeyHasher)
     {
         _dbContext = dbContext;
         _timeProvider = timeProvider;
         _logger = logger;
         _apiKeyGenerator = apiKeyGenerator;
+        _apiKeyHasher = apiKeyHasher;
     }
 
     public async Task<Result<CreateApiKeyResponse>> CreateApiKeyAsync(Guid ownerId, Guid projectId, CreateApiKeyRequest request, CancellationToken ct = default)
@@ -32,7 +36,7 @@ public class ApiKeyManagementService : IApiKeyManagementService
             .AnyAsync(p => p.Id == projectId && p.OwnerId == ownerId && !p.IsDeleted, ct);
 
         var rawKey = _apiKeyGenerator.GenerateRawKey();
-        var keyHash = _apiKeyGenerator.HashKey(rawKey);
+        var keyHash = _apiKeyHasher.HashKey(rawKey);
         var prefix = _apiKeyGenerator.CreateDisplayPrefix(rawKey);
 
         var apiKey = new ApiKey
