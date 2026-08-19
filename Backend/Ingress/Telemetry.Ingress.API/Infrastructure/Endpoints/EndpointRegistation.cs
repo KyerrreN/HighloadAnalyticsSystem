@@ -16,7 +16,8 @@ public static class EndpointRegistation
 
             var group = app
                 .MapGroup("api/v{version:apiVersion}")
-                .WithApiVersionSet(apiVersionSet);
+                .WithApiVersionSet(apiVersionSet)
+                .RequireAuthorization();
 
             group.MapIngestEndpoints();
         }
