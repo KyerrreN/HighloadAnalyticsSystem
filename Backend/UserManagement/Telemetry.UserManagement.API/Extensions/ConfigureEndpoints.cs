@@ -1,4 +1,5 @@
 ﻿using Telemetry.UserManagement.API.Features.ApiKeyManagement;
+using Telemetry.UserManagement.API.Features.ApiKeyManagement.ValidateApiKey;
 using Telemetry.UserManagement.API.Features.ProjectManagement;
 using Telemetry.UserManagement.API.Features.UserManagement;
 
@@ -13,6 +14,8 @@ public static class ConfigureEndpoints
             endpoints.MapUserManagementEndpoints();
             endpoints.MapProjectManagementEndpoints();
             endpoints.MapApiKeyManagementEndpoints();
+
+            endpoints.MapGrpcService<ApiKeyValidationGrpcService>();
 
             return endpoints;
         }

@@ -17,6 +17,8 @@ builder.ConfigureOtel();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
+builder.Services.AddGrpc();
+
 builder.Services.AddSingleton(TimeProvider.System);
 
 var app = builder.Build();

@@ -142,6 +142,40 @@ public class ApiKeyManagementService : IApiKeyManagementService
             return Result.Failed(ApiKeyErrors.RevokeFailed);
         }
     }
+
+    public async Task<Result<Guid>> ValidateApiKeyHashAsync(string keyHash, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(keyHash))
+        {
+            return Result.Failed<Guid>(ApiKeyErrors.InvalidHash);
+        }
+
+        try
+        {
+            var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+
+            var apiKeyInfo = await _dbContext.ApiKeys
+                .AsNoTracking()
+                .Where(k => k.KeyHash == keyHash
+                         && !k.IsRevoked
+                         && !k.Project.IsDeleted
+                         && (k.ExpiresAtUtc == null || k.ExpiresAtUtc > utcNow))
+                .Select(k => new { k.ProjectId })
+                .FirstOrDefaultAsync(ct);
+
+            if (apiKeyInfo is null)
+            {
+                return Result.Failed<Guid>(ApiKeyErrors.InvalidOrExpired);
+            }
+
+            return apiKeyInfo.ProjectId;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to validate API key hash."); // todo: high-performance logging
+            return Result.Failed<Guid>(ApiKeyErrors.ValidationFailed);
+        }
+    }
 }
 
 public interface IApiKeyManagementService
@@ -162,4 +196,6 @@ public interface IApiKeyManagementService
         Guid keyId,
         Guid ownerId,
         CancellationToken ct = default);
+
+    Task<Result<Guid>> ValidateApiKeyHashAsync(string keyHash, CancellationToken ct = default);
 }
