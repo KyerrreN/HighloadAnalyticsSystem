@@ -16,6 +16,7 @@ public static class Services
         public IServiceCollection RegisterServices()
         {
             services.AddSingleton<IEventMessageBus, KafkaEventMessageBus>();
+            services.AddSingleton<IApiKeyHasher, ApiKeyHasher>();
 
             services.AddHostedService<TelemetryPublishWorker>();
             services.AddHostedService<SetupKafkaService>();

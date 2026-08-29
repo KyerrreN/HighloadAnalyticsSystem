@@ -6,6 +6,8 @@ using Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.ConfigureSwagger();
+builder.Services.ConfigureCaching(builder.Configuration);
+builder.Services.ConfigureGrpc(builder.Configuration);
 
 builder.Services.ConfigureAuthentication();
 builder.Services.AddAuthorization();
