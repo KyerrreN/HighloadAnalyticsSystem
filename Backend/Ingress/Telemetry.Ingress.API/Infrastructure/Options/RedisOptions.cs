@@ -2,7 +2,7 @@
 
 namespace Telemetry.Ingress.API.Infrastructure.Options;
 
-public class RedisOptions
+public sealed class RedisOptions
 {
     public const string SectionName = "Redis";
 

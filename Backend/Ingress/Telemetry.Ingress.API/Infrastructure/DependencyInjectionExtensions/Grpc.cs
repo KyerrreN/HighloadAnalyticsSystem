@@ -1,4 +1,6 @@
-﻿using Telemetry.Contracts.Grpc;
+﻿using Microsoft.Extensions.Options;
+using Telemetry.Contracts.Grpc;
+using Telemetry.Ingress.API.Infrastructure.Options;
 
 namespace Telemetry.Ingress.API.Infrastructure.DependencyInjectionExtensions;
 
@@ -8,12 +10,10 @@ public static class Grpc
     {
         public IServiceCollection ConfigureGrpc(IConfiguration configuration)
         {
-            services.AddGrpcClient<ApiKeyValidation.ApiKeyValidationClient>(options =>
+            services.AddGrpcClient<ApiKeyValidation.ApiKeyValidationClient>((sp, options) =>
             {
-                string url = configuration["GrpcServices:UserManagementUrl"]
-                    ?? "http://localhost:5001"; // todo: options
-
-                options.Address = new Uri(url);
+                var grpcOptions = sp.GetRequiredService<IOptions<GrpcOptions>>().Value;
+                options.Address = new Uri(grpcOptions.UserManagementUrl);
             });
 
             return services;

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json;
+using Telemetry.Contracts.Constants;
 using Telemetry.Contracts.Events;
 using Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 using Telemetry.Ingress.API.Infrastructure.Services;
@@ -23,8 +24,12 @@ public static class IngestEventEndpoint
                 [FromServices] LocalBufferService buffer,
                 [FromServices] TimeProvider timeProvider) =>
             {
-                // todo: dto validation
-                var projectIdClaim = user.FindFirst("projectId")?.Value; // todo: constants
+                if (!requestBody.IsValid())
+                {
+                    return Results.UnprocessableEntity();
+                }
+
+                var projectIdClaim = user.FindFirst(ClaimsConstants.ProjectId)?.Value;
                 if (!Guid.TryParse(projectIdClaim, out var projectId))
                 {
                     return Results.Unauthorized();
@@ -41,7 +46,7 @@ public static class IngestEventEndpoint
                 );
 
                 var key = Ulid.NewUlid().ToByteArray();
-                var value = JsonSerializer.SerializeToUtf8Bytes(envelope);
+                var value = JsonSerializer.SerializeToUtf8Bytes(envelope, IngressJsonContext.Default.EnvelopedEvent);
 
                 using (var activity = ActivitySource.StartActivity("RocksDB Put", ActivityKind.Internal))
                 {

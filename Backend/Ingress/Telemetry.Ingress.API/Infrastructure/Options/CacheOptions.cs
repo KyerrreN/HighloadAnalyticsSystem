@@ -2,7 +2,7 @@
 
 namespace Telemetry.Ingress.API.Infrastructure.Options;
 
-public class CacheOptions
+public sealed class CacheOptions
 {
     public const string SectionName = "Cache";
 

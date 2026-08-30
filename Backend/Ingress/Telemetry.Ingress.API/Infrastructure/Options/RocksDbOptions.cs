@@ -1,6 +1,6 @@
 ﻿namespace Telemetry.Ingress.API.Infrastructure.Options;
 
-public class RocksDbOptions
+public sealed class RocksDbOptions
 {
     public const string SectionName = "RocksDb";
 

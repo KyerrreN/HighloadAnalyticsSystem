@@ -22,6 +22,11 @@ public static class Options
                 .Bind(configuration.GetSection(CacheOptions.SectionName))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
+
+            services.AddOptions<GrpcOptions>()
+                .BindConfiguration(GrpcOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
         } 
     }
 }

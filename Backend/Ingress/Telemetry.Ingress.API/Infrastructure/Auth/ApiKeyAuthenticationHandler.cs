@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using Telemetry.Contracts.Constants;
 using Telemetry.Ingress.API.Features.ApiKeys;
 using Telemetry.Ingress.API.Infrastructure.Options;
 
@@ -38,7 +39,7 @@ public class ApiKeyAuthenticationHandler(
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, apiKeyDetails.ProjectId),
-            new Claim("projectId", apiKeyDetails.ProjectId) // todo: constants
+            new Claim(ClaimsConstants.ProjectId, apiKeyDetails.ProjectId)
         };
 
         var identity = new ClaimsIdentity(claims, Scheme.Name);
