@@ -1,4 +1,4 @@
-﻿using Telemetry.UserManagement.Infrastructure.Result;
+﻿using Telemetry.Contracts.Result;
 
 namespace Telemetry.UserManagement.API.Features.ApiKeyManagement;
 

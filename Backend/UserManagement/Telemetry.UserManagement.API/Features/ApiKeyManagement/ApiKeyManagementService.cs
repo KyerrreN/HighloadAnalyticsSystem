@@ -3,8 +3,8 @@ using Telemetry.UserManagement.Infrastructure.Logging;
 using Telemetry.UserManagement.API.Features.ApiKeyManagement.CreateApiKey;
 using Telemetry.UserManagement.Infrastructure.Database;
 using Telemetry.UserManagement.Infrastructure.Database.Entities;
-using Telemetry.UserManagement.Infrastructure.Result;
 using Telemetry.Contracts.Interfaces;
+using Telemetry.Contracts.Result;
 
 namespace Telemetry.UserManagement.API.Features.ApiKeyManagement;
 

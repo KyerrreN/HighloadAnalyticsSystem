@@ -1,4 +1,4 @@
-﻿namespace Telemetry.UserManagement.Infrastructure.Result;
+﻿namespace Telemetry.Contracts.Result;
 
 public readonly record struct Error(string Code, string Message)
 {

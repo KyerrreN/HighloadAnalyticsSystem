@@ -1,4 +1,4 @@
-﻿namespace Telemetry.UserManagement.Infrastructure.Result;
+﻿namespace Telemetry.Contracts.Result;
 
 public record Result
 {

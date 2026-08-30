@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Options;
 using Refit;
 using System.Net;
+using Telemetry.Contracts.Result;
 using Telemetry.UserManagement.API.Options;
 using Telemetry.UserManagement.Infrastructure.Errors;
-using Telemetry.UserManagement.Infrastructure.Result;
 
 namespace Telemetry.UserManagement.API.Features.Shared.Keycloak;
 
