@@ -1,4 +1,5 @@
-﻿using ZiggyCreatures.Caching.Fusion;
+﻿using Telemetry.Ingress.API.Infrastructure.Options;
+using ZiggyCreatures.Caching.Fusion;
 using ZiggyCreatures.Caching.Fusion.Backplane.StackExchangeRedis;
 using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 
@@ -10,35 +11,39 @@ public static class CacheExtensions
     {
         public IServiceCollection ConfigureCaching(IConfiguration configuration)
         {
-            string redisConnectionString = configuration.GetConnectionString("Redis")
-                ?? "localhost:6379"; // todo: options
+            var redisOptions = configuration.GetSection(RedisOptions.SectionName).Get<RedisOptions>()
+                            ?? new RedisOptions();
+            var cacheOptions = configuration.GetSection(CacheOptions.SectionName).Get<CacheOptions>()
+                ?? new CacheOptions();
 
+            // L1
             services.AddMemoryCache(opt =>
             {
-                opt.SizeLimit = 1_000_000; // todo: options
-                opt.CompactionPercentage = 0.2; // todo: options
+                opt.SizeLimit = cacheOptions.MemoryCacheSizeLimit;
+                opt.CompactionPercentage = cacheOptions.CompactionPercentage;
             });
 
+            // L2
             services.AddStackExchangeRedisCache(opt =>
             {
-                opt.Configuration = redisConnectionString;
-                opt.InstanceName = "telemetry:";
+                opt.Configuration = redisOptions.ConnectionString;
+                opt.InstanceName = redisOptions.InstanceName;
             });
 
             services.AddFusionCache()
                 .WithDefaultEntryOptions(opt =>
                 {
-                    opt.Duration = TimeSpan.FromMinutes(2); // L1, todo: options
-                    opt.DistributedCacheDuration = TimeSpan.FromDays(1); // L2, todo: options
+                    opt.Duration = cacheOptions.L1Duration;
+                    opt.DistributedCacheDuration = cacheOptions.L2Duration;
                     opt.Size = 1;
                     opt.IsFailSafeEnabled = true;
-                    opt.FailSafeThrottleDuration = TimeSpan.FromSeconds(30);
+                    opt.FailSafeThrottleDuration = cacheOptions.FailSafeThrottleDuration;
                 })
                 .WithSerializer(new FusionCacheSystemTextJsonSerializer())
                 .WithRegisteredDistributedCache()
                 .WithBackplane(new RedisBackplane(new RedisBackplaneOptions
                 {
-                    Configuration = redisConnectionString
+                    Configuration = redisOptions.ConnectionString
                 }));
 
             return services;

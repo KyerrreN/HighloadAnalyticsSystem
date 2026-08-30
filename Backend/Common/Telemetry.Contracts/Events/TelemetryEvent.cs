@@ -3,9 +3,8 @@
 namespace Telemetry.Contracts.Events;
 
 public record TelemetryEvent(
-    Guid EventId,
-    string ProjectApiKey,
-    DateTimeOffset Timestamp,
+    Guid? EventId,
+    DateTimeOffset? Timestamp,
     string EventName,
     string? ActorId,
     string? SessionId,

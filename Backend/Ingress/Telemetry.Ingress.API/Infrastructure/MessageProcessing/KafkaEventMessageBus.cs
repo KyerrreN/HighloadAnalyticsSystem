@@ -58,8 +58,8 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
     public async Task PublishAsync(TelemetryEvent @event, ActivityContext traceContext, DateTime receivedAt, CancellationToken cancellationToken)
     {
         var key = !string.IsNullOrWhiteSpace(@event.SessionId) ? @event.SessionId :
-                  !string.IsNullOrWhiteSpace(@event.ActorId) ? @event.ActorId :
-                  @event.ProjectApiKey;
+                  !string.IsNullOrWhiteSpace(@event.ActorId) ? @event.ActorId : "sds"; // todo: fix
+                  //@event.ProjectApiKey;
 
         var value = JsonSerializer.Serialize(@event);
 

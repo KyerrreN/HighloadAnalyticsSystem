@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Security.Claims;
 using System.Text.Json;
 using Telemetry.Contracts.Events;
 using Telemetry.Ingress.API.Infrastructure.Observability.Otel;
@@ -17,15 +18,27 @@ public static class IngestEventEndpoint
         {
             app.MapPost("events", (
                 [FromBody] TelemetryEvent requestBody,
+                ClaimsPrincipal user,
                 [FromServices] IngressMetrics metrics,
                 [FromServices] LocalBufferService buffer,
                 [FromServices] TimeProvider timeProvider) =>
             {
-                // todo: validation
+                // todo: dto validation
+                var projectIdClaim = user.FindFirst("projectId")?.Value; // todo: constants
+                if (!Guid.TryParse(projectIdClaim, out var projectId))
+                {
+                    return Results.Unauthorized();
+                }
+
                 string? traceParent = Activity.Current?.Id;
                 var receivedAt = timeProvider.GetUtcNow().UtcDateTime;
 
-                var envelope = new EnvelopedEvent(requestBody, traceParent, receivedAt);
+                var envelope = new EnvelopedEvent(
+                    ProjectId: projectId,
+                    Payload: requestBody,
+                    TraceParent: traceParent,
+                    ReceivedAt: receivedAt
+                );
 
                 var key = Ulid.NewUlid().ToByteArray();
                 var value = JsonSerializer.SerializeToUtf8Bytes(envelope);
@@ -40,7 +53,9 @@ public static class IngestEventEndpoint
                 return Results.Accepted();
             })
                 .WithName("IngestTelemetryEvent")
+                .RequireAuthorization()
                 .Produces(StatusCodes.Status202Accepted)
+                .Produces(StatusCodes.Status401Unauthorized)
                 .Produces(StatusCodes.Status503ServiceUnavailable);
         }
     }
