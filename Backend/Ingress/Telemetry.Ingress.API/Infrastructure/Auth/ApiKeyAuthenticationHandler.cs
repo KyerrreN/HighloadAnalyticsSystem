@@ -27,11 +27,13 @@ public class ApiKeyAuthenticationHandler(
             return AuthenticateResult.NoResult();
         }
 
-        var apiKeyDetails = await apiKeyCacheService.ValidateApiKeyAsync(providedApiKey, Context.RequestAborted);
-        if (apiKeyDetails is null)
+        var result = await apiKeyCacheService.ValidateApiKeyAsync(providedApiKey, Context.RequestAborted);
+        if (result.IsFailure)
         {
-            return AuthenticateResult.Fail("Invalid or revoked API Key provided.");
+            return AuthenticateResult.Fail(result.Error.Message);
         }
+
+        var apiKeyDetails = result.Value!;
 
         var claims = new[]
         {

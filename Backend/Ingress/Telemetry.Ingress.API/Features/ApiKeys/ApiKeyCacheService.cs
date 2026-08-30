@@ -1,6 +1,8 @@
 ﻿using Grpc.Core;
 using Telemetry.Contracts.Grpc;
 using Telemetry.Contracts.Interfaces;
+using Telemetry.Contracts.Result;
+using Telemetry.Ingress.API.Infrastructure.Exceptions;
 using ZiggyCreatures.Caching.Fusion;
 
 namespace Telemetry.Ingress.API.Features.ApiKeys;
@@ -27,20 +29,23 @@ public class ApiKeyCacheService : IApiKeyCacheService
         _grpcClient = grpcClient;
     }
 
-    public async ValueTask<ApiKeyDetails?> ValidateApiKeyAsync(string rawApiKey, CancellationToken cancellationToken = default)
+    public async ValueTask<Result<ApiKeyDetails>> ValidateApiKeyAsync(string rawApiKey, CancellationToken cancellationToken = default)
     {
-        if (!IsValidFormat(rawApiKey)) return null;
+        if (!IsValidFormat(rawApiKey))
+        {
+            return Result<ApiKeyDetails>.Failed(ApiKeyErrors.InvalidFormat);
+        }
 
         string keyHash = _apiKeyHasher.HashKey(rawApiKey);
         string cacheKey = $"apikey:{keyHash}";
 
-        return await _cache.GetOrSetAsync<ApiKeyDetails?>(
+        var details = await _cache.GetOrSetAsync<ApiKeyDetails?>(
             cacheKey,
             async (context, ct) =>
             {
                 var remoteResult = await FetchFromUserManagementAsync(keyHash, ct);
 
-                if (remoteResult is null)
+                if (remoteResult.IsFailure)
                 {
                     // negative caching, ddos protection
                     context.Options.Duration = TimeSpan.FromSeconds(10);
@@ -48,9 +53,13 @@ public class ApiKeyCacheService : IApiKeyCacheService
                     return null;
                 }
 
-                return remoteResult;
+                return remoteResult.Value;
             },
             token: cancellationToken);
+
+        return details is not null
+            ? Result<ApiKeyDetails>.Success(details)
+            : Result<ApiKeyDetails>.Failed(ApiKeyErrors.InvalidOrExpired);
     }
 
     private static bool IsValidFormat(string rawApiKey)
@@ -60,7 +69,7 @@ public class ApiKeyCacheService : IApiKeyCacheService
             && rawApiKey.StartsWith(ApiKeyPrefix, StringComparison.Ordinal);
     }
 
-    private async Task<ApiKeyDetails?> FetchFromUserManagementAsync(string keyHash, CancellationToken ct)
+    private async Task<Result<ApiKeyDetails>> FetchFromUserManagementAsync(string keyHash, CancellationToken ct)
     {
         try
         {
@@ -73,22 +82,22 @@ public class ApiKeyCacheService : IApiKeyCacheService
 
             if (!response.IsValid || string.IsNullOrEmpty(response.ProjectId))
             {
-                return null;
+                return Result<ApiKeyDetails>.Failed(ApiKeyErrors.InvalidOrExpired);
             }
 
-            return new ApiKeyDetails(response.ProjectId);
+            return Result<ApiKeyDetails>.Success(new ApiKeyDetails(response.ProjectId));
         }
         catch (RpcException ex)
         {
             _logger.LogError(ex, "gRPC call to UserManagement failed with status: {Status}", ex.Status); // todo: high-performance logging
-            return null;
+            throw new UserManagementUnavailableException("UserManagement gRPC service is unavailable.", ex);
         }
     }
 }
 
 public interface IApiKeyCacheService
 {
-    ValueTask<ApiKeyDetails?> ValidateApiKeyAsync(string rawApiKey, CancellationToken cancellationToken = default);
+    ValueTask<Result<ApiKeyDetails>> ValidateApiKeyAsync(string rawApiKey, CancellationToken cancellationToken = default);
 }
 
 public sealed record ApiKeyDetails(

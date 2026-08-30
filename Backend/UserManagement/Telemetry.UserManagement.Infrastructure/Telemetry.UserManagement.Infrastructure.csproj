@@ -24,8 +24,4 @@
     <ProjectReference Include="..\..\Common\Telemetry.Shared.Observability\Telemetry.Shared.Observability.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Result\" />
-  </ItemGroup>
-
 </Project>

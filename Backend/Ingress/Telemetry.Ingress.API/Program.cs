@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using Telemetry.Ingress.API.Infrastructure.DependencyInjectionExtensions;
 using Telemetry.Ingress.API.Infrastructure.Endpoints;
+using Telemetry.Ingress.API.Infrastructure.Exceptions;
 using Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.ConfigureSwagger();
 builder.Services.ConfigureCaching(builder.Configuration);
 builder.Services.ConfigureGrpc(builder.Configuration);
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.ConfigureAuthentication();
 builder.Services.AddAuthorization();
@@ -43,6 +47,8 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.ConfigureOpenTelemetry();
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 app.UseHttpLogging();
 
