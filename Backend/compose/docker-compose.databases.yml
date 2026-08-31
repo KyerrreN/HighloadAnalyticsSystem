@@ -55,9 +55,31 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis-dev
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru --appendonly yes
+    ports:
+      - "6379:6379"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 768M
+    volumes:
+      - redis_data:/data
+    networks:
+      - telemetry-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
 volumes:
   clickhouse_data:
   user_management_postgres_data:
+  redis_data:
 
 networks:
   telemetry-network:

@@ -17,6 +17,8 @@ builder.ConfigureOtel();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
+builder.Services.AddGrpc();
+
 builder.Services.AddSingleton(TimeProvider.System);
 
 var app = builder.Build();
@@ -26,8 +28,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
+else
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 

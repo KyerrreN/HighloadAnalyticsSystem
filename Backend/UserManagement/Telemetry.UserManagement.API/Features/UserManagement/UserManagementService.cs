@@ -1,8 +1,8 @@
 ﻿using Telemetry.UserManagement.API.Features.Shared.Keycloak;
 using Telemetry.UserManagement.Infrastructure.Database;
 using Telemetry.UserManagement.Infrastructure.Errors;
-using Telemetry.UserManagement.Infrastructure.Result;
 using Telemetry.UserManagement.Infrastructure.Logging;
+using Telemetry.Contracts.Result;
 
 namespace Telemetry.UserManagement.API.Features.UserManagement;
 

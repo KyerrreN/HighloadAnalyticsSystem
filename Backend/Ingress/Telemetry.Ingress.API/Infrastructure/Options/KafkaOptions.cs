@@ -2,7 +2,7 @@
 
 namespace Telemetry.Ingress.API.Infrastructure.Options;
 
-public class KafkaOptions
+public sealed class KafkaOptions
 {
     public const string SectionName = "Kafka";
 

@@ -20,5 +20,7 @@ public static class LogEventIds
         public const int ApiKeyCreationFailed = 3001;
         public const int ApiKeyFetchFailed = 3002;
         public const int ApiKeyRevokeFailed = 3003;
+        public const int ApiKeyValidationError = 3004;
+        public const int ApiKeyValidationWarning = 3005;
     }
 }

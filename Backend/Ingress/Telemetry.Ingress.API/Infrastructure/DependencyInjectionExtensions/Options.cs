@@ -12,6 +12,21 @@ public static class Options
                 .Bind(configuration.GetSection(KafkaOptions.SectionName))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
+
+            services.AddOptions<RedisOptions>()
+                .Bind(configuration.GetSection(RedisOptions.SectionName))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            services.AddOptions<CacheOptions>()
+                .Bind(configuration.GetSection(CacheOptions.SectionName))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            services.AddOptions<GrpcOptions>()
+                .BindConfiguration(GrpcOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
         } 
     }
 }

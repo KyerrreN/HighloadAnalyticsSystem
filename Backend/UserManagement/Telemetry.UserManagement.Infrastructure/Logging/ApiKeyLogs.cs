@@ -32,4 +32,21 @@ public static partial class ApiKeyLogs
         Exception exception,
         Guid keyId,
         Guid projectId);
+
+    [LoggerMessage(
+        EventId = LogEventIds.ApiKey.ApiKeyValidationError,
+        Level = LogLevel.Error,
+        Message = "Failed to validate API key hash.")]
+    public static partial void LogApiKeyValidationError(
+        this ILogger logger,
+        Exception exception);
+
+    [LoggerMessage(
+        EventId = LogEventIds.ApiKey.ApiKeyValidationWarning,
+        Level = LogLevel.Warning,
+        Message = "gRPC API Key validation failed: {ErrorCode} - {ErrorMessage}")]
+    public static partial void LogApiKeyValidationWarning(
+        this ILogger logger,
+        string errorCode,
+        string errorMessage);
 }

@@ -16,6 +16,13 @@ public class EnsureUserExistsMiddleware
 
     public async Task InvokeAsync(HttpContext context, AppDbContext dbContext)
     {
+        // todo: maybe protect grpc on infra or application level
+        if (context.Request.ContentType?.StartsWith("application/grpc", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            await _next(context);
+            return;
+        }
+
         if (context.User.Identity?.IsAuthenticated == true)
         {
             var userIdClaim = AuthUtils.GetUserIdFromClaimsPrincipal(context.User);

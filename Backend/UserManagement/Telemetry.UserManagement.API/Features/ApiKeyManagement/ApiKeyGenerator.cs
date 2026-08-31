@@ -18,16 +18,6 @@ public class ApiKeyGenerator : IApiKeyGenerator
     }
 
     /// <summary>
-    /// Computes SHA-256 hash of a project api key
-    /// </summary>
-    public string HashKey(string rawKey)
-    {
-        var bytes = Encoding.UTF8.GetBytes(rawKey);
-        var hashBytes = SHA256.HashData(bytes);
-        return Convert.ToHexStringLower(hashBytes);
-    }
-
-    /// <summary>
     /// Generate safe-to-show display prefix
     /// </summary>
     public string CreateDisplayPrefix(string rawKey)
@@ -40,6 +30,5 @@ public class ApiKeyGenerator : IApiKeyGenerator
 public interface IApiKeyGenerator
 {
     string GenerateRawKey();
-    string HashKey(string rawKey);
     string CreateDisplayPrefix(string rawKey);
 }

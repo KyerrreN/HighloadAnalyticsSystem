@@ -1,13 +1,20 @@
 using Asp.Versioning;
-using Microsoft.AspNetCore.HttpLogging;
 using Telemetry.Ingress.API.Infrastructure.DependencyInjectionExtensions;
 using Telemetry.Ingress.API.Infrastructure.Endpoints;
+using Telemetry.Ingress.API.Infrastructure.Exceptions;
 using Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.ConfigureSwagger();
+builder.Services.ConfigureCaching(builder.Configuration);
+builder.Services.ConfigureGrpc(builder.Configuration);
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
+builder.Services.ConfigureAuthentication();
+builder.Services.AddAuthorization();
 
 // versioning
 builder.Services.AddApiVersioning(opt =>
@@ -41,6 +48,8 @@ builder.ConfigureOpenTelemetry();
 
 var app = builder.Build();
 
+app.UseExceptionHandler();
+
 app.UseHttpLogging();
 
 // Request pipeline
@@ -51,6 +60,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapEndpoints();
 
