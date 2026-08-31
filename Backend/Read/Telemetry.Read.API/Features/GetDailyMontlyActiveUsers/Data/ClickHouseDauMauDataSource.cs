@@ -1,6 +1,7 @@
 ﻿using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
 using Microsoft.Extensions.Options;
+using Telemetry.Contracts.Constants;
 using Telemetry.Read.Domain.Options;
 
 namespace Telemetry.Read.API.Features.GetDailyMontlyActiveUsers.Data;
@@ -14,7 +15,7 @@ public class ClickHouseDauMauDataSource : IDauMauDataSource
         _connectionString = options.Value.ConnectionString;
     }
 
-    public async Task<Dictionary<DateTime, long>> GetSparseDataAsync(string projectApiKey, DateTime from, DateTime to, CancellationToken cancellationToken)
+    public async Task<Dictionary<DateTime, long>> GetSparseDataAsync(Guid projectId, DateTime from, DateTime to, CancellationToken cancellationToken)
     {
         var sparseData = new Dictionary<DateTime, long>();
 
@@ -22,19 +23,19 @@ public class ClickHouseDauMauDataSource : IDauMauDataSource
         await connection.OpenAsync(cancellationToken);
 
         using var command = connection.CreateCommand();
-        command.CommandText = """
+        command.CommandText = $"""
             SELECT 
-                toStartOfDay(Timestamp) AS Date,
-                uniqExact(ActorId) AS UniqueUsers
-            FROM telemetry_events
-            WHERE ProjectApiKey = @apiKey 
-                AND Timestamp >= @from 
-                AND Timestamp <= @to
+                toStartOfDay({TelemetryEventsTable.Timestamp}) AS Date,
+                uniqExact({TelemetryEventsTable.ActorId}) AS UniqueUsers
+            FROM {TelemetryEventsTable.TableName}
+            WHERE {TelemetryEventsTable.ProjectId} = @projectId 
+                AND {TelemetryEventsTable.Timestamp} >= @from 
+                AND {TelemetryEventsTable.Timestamp} <= @to
             GROUP BY Date
             ORDER BY Date ASC
             """;
 
-        command.AddParameter("apiKey", projectApiKey);
+        command.AddParameter("projectId", projectId);
         command.AddParameter("from", from);
         command.AddParameter("to", to);
 

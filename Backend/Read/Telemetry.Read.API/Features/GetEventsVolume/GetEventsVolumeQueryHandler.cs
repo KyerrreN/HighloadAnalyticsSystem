@@ -11,7 +11,7 @@ public class GetEventsVolumeQueryHandler(IEventsVolumeDataSource dataSource) : I
         DateTime dbTo = query.To.ToDateTime(TimeOnly.MaxValue);
 
         var data = await dataSource.GetAsync(
-            query.ProjectApiKey, 
+            query.ProjectId, 
             dbFrom, 
             dbTo, 
             query.Granularity, 
@@ -20,6 +20,7 @@ public class GetEventsVolumeQueryHandler(IEventsVolumeDataSource dataSource) : I
 
         var items = new List<EventVolumePoint>();
         int stepMinutes = (int)query.Granularity;
+        if (stepMinutes <= 0) stepMinutes = (int)EventGranularityEnum.FiveMinutes;
 
         for (var currentStep = dbFrom; currentStep <= dbTo; currentStep = currentStep.AddMinutes(stepMinutes))
         {

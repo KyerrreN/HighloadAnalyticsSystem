@@ -1,9 +1,6 @@
 ﻿using System.Diagnostics;
-using Telemetry.Contracts.Constants;
 using Telemetry.Read.Domain.Abstractions.Enrichers;
-using Telemetry.Read.Domain.Abstractions.Markers;
 using Telemetry.Read.Domain.OpenTelemetry;
-using Telemetry.Read.Domain.Utils;
 
 namespace Telemetry.Read.Domain.Abstractions.Decorator;
 

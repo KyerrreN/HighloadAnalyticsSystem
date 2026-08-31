@@ -6,8 +6,8 @@ public class GetDauMauQueryValidator : AbstractValidator<GetDauMauQuery>
 {
     public GetDauMauQueryValidator(TimeProvider timeProvider)
     {
-        RuleFor(x => x.ProjectApiKey)
-            .NotEmpty()
+        RuleFor(x => x.ProjectId)
+             .NotEmpty()
             .WithMessage("{PropertyName} is required");
 
         RuleFor(x => x.From)

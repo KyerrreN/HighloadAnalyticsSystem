@@ -1,6 +1,7 @@
 ﻿using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
 using Microsoft.Extensions.Options;
+using Telemetry.Contracts.Constants;
 using Telemetry.Read.Domain.Options;
 
 namespace Telemetry.Read.API.Features.GetEventsVolume.Data;
@@ -14,7 +15,7 @@ public class ClickHouseEventsVolumeDataSource : IEventsVolumeDataSource
         _connectionString = options.Value.ConnectionString;
     }
 
-    public async Task<Dictionary<DateTime, long>> GetAsync(string projectApiKey, DateTime from, DateTime to, EventGranularityEnum granularity, string? eventName, CancellationToken ct)
+    public async Task<Dictionary<DateTime, long>> GetAsync(Guid projectId, DateTime from, DateTime to, EventGranularityEnum granularity, string? eventName, CancellationToken ct)
     {
         using var connection = new ClickHouseConnection(_connectionString);
         await connection.OpenAsync(ct);
@@ -22,20 +23,20 @@ public class ClickHouseEventsVolumeDataSource : IEventsVolumeDataSource
         using var command = connection.CreateCommand();
         int minutes = (int)granularity;
 
-        command.CommandText = """
+        command.CommandText = $"""
             SELECT 
-                toStartOfInterval(Timestamp, toIntervalMinute(@minutes)) AS Bucket,
-                uniqExact(EventId) AS TotalEvents
-            FROM telemetry_events
-            WHERE ProjectApiKey = @apiKey 
-              AND Timestamp >= @from 
-              AND Timestamp <= @to
-              AND (@eventName = '' OR EventName = @eventName)
+                toStartOfInterval({TelemetryEventsTable.Timestamp}, toIntervalMinute(@minutes)) AS Bucket,
+                uniqExact({TelemetryEventsTable.EventId}) AS TotalEvents
+            FROM {TelemetryEventsTable.TableName}
+            WHERE {TelemetryEventsTable.ProjectId} = @projectId 
+              AND {TelemetryEventsTable.Timestamp} >= @from 
+              AND {TelemetryEventsTable.Timestamp} <= @to
+              AND (@eventName = '' OR {TelemetryEventsTable.EventName} = @eventName)
             GROUP BY Bucket
             ORDER BY Bucket ASC
             """;
 
-        command.AddParameter("apiKey", projectApiKey);
+        command.AddParameter("projectId", projectId);
         command.AddParameter("from", from);
         command.AddParameter("to", to);
         command.AddParameter("eventName", string.IsNullOrWhiteSpace(eventName) ? string.Empty : eventName);

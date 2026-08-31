@@ -8,7 +8,7 @@ public class GetEventsVolumeQueryValidator : AbstractValidator<GetEventsVolumeQu
 
     public GetEventsVolumeQueryValidator()
     {
-        RuleFor(x => x.ProjectApiKey)
+        RuleFor(x => x.ProjectId)
             .NotEmpty()
             .WithMessage("'{PropertyName}' is required and cannot be empty.");
 

@@ -21,7 +21,7 @@ public class GetDauMauHandler : IQueryHandler<GetDauMauQuery, List<DauMauRespons
             : _timeProvider.GetUtcNow().UtcDateTime;
 
         var sparseData = await _dataSource.GetSparseDataAsync(
-            query.ProjectApiKey,
+            query.ProjectId,
             query.From,
             actualTo,
             cancellationToken);

@@ -11,7 +11,7 @@ public class GetEventsVolumeEndpoint : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet("event-volume", async (
+        app.MapGet("volume-metrics", async (
             [AsParameters] GetEventsVolumeQuery query,
             IQueryHandler<GetEventsVolumeQuery, GetEventsVolumeResponse> queryHandler,
             CancellationToken ct) =>

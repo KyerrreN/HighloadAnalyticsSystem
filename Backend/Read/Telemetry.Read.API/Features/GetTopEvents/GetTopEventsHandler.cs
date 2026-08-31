@@ -23,7 +23,7 @@ public class GetTopEventsHandler(ITopEventsDataSource dataSource, TimeProvider t
         DateTime dbFrom = from.ToDateTime(TimeOnly.MinValue);
         DateTime dbTo = to.ToDateTime(TimeOnly.MaxValue);
 
-        var data = await dataSource.GetAsync(query.ProjectApiKey, dbFrom, dbTo, query.Limit, cancellationToken);
+        var data = await dataSource.GetAsync(query.ProjectId, dbFrom, dbTo, query.Limit, cancellationToken);
 
         return new GetTopEventsResponse(data);
     }

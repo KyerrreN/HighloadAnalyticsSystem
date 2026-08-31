@@ -1,3 +1,5 @@
+using Microsoft.OpenApi;
+using System.Text.Json.Nodes;
 using Telemetry.Read.API.Infrastructure.Extensions;
 using Telemetry.Read.API.Infrastructure.Observability;
 

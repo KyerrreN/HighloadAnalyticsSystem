@@ -2,6 +2,8 @@
 
 public static class TelemetryEventsTable
 {
+    public const string TableName = "telemetry_events";
+
     public const string ProjectId = "ProjectId";
     public const string EventId = "EventId";
     public const string EventName = "EventName";
