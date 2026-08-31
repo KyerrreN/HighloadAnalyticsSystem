@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Telemetry.Ingress.API.Infrastructure.Exceptions;
 
-public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
+public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,

@@ -38,5 +38,5 @@ public static partial class KafkaLogging
         EventId = LoggingEventIdConstants.KafkaLogMessageRejected,
         Level = LogLevel.Error,
         Message = "Permanent Kafka rejection for event {eventId}. Message dropped.")]
-    public static partial void LogKafkaMessageRejected(this ILogger logger, Guid eventId, Exception? ex);
+    public static partial void LogKafkaMessageRejected(this ILogger logger, Guid? eventId, Exception? ex);
 }

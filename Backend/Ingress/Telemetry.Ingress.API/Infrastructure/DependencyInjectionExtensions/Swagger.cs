@@ -18,7 +18,7 @@ public static class SwaggerExtensions
                     Name = "X-API-Key",
                     Type = SecuritySchemeType.ApiKey,
                     In = ParameterLocation.Header,
-                    Description = "Enter API Key (e.g. tlm_test123)"
+                    Description = "Enter API Key"
                 };
 
                 options.AddSecurityDefinition("ApiKey", apiKeyScheme);
