@@ -12,7 +12,7 @@ using Telemetry.Ingress.API.Infrastructure.Options;
 
 namespace Telemetry.Ingress.API.Infrastructure.MessageProcessing;
 
-public class KafkaEventMessageBus : IEventMessageBus, IDisposable
+public sealed class KafkaEventMessageBus : IEventMessageBus, IDisposable
 {
     private readonly IProducer<string, string> _producer;
     private readonly ILogger<KafkaEventMessageBus> _logger;
@@ -20,7 +20,7 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
     private readonly KafkaOptions _options;
     private readonly Action<Headers, string, string> SetHeaders = (headers, key, value) =>
     {
-        headers.Remove(key); // avoid duplicates
+        headers.Remove(key); // avoids duplicates
         headers.Add(key, Encoding.UTF8.GetBytes(value));
     };
 
@@ -58,10 +58,9 @@ public class KafkaEventMessageBus : IEventMessageBus, IDisposable
     public async Task PublishAsync(TelemetryEvent @event, ActivityContext traceContext, DateTime receivedAt, CancellationToken cancellationToken)
     {
         var key = !string.IsNullOrWhiteSpace(@event.SessionId) ? @event.SessionId :
-                  !string.IsNullOrWhiteSpace(@event.ActorId) ? @event.ActorId : "sds"; // todo: fix
-                  //@event.ProjectApiKey;
+                  !string.IsNullOrWhiteSpace(@event.ActorId) ? @event.ActorId : @event.EventName;
 
-        var value = JsonSerializer.Serialize(@event);
+        var value = JsonSerializer.Serialize(@event, IngressJsonContext.Default.TelemetryEvent);
 
         var headers = new Headers();
         var propagationContext = new PropagationContext(traceContext, default);

@@ -21,4 +21,8 @@ public static class LoggingEventIdConstants
     // Error (4000-4099)
     public const int WorkerLogProcessingError = 4000;
     public const int WorkerLogDeserializationError = 4001;
+
+    // gRPC / ApiKeys (X200-X299)
+    // Error (4200-4299)
+    public const int UserManagementGrpcError = 4200;
 }

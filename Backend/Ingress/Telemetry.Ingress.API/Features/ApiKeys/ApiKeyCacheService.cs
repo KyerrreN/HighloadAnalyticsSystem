@@ -3,6 +3,7 @@ using Telemetry.Contracts.Grpc;
 using Telemetry.Contracts.Interfaces;
 using Telemetry.Contracts.Result;
 using Telemetry.Ingress.API.Infrastructure.Exceptions;
+using Telemetry.Ingress.API.Infrastructure.Observability.HighPerformanceLogging;
 using ZiggyCreatures.Caching.Fusion;
 
 namespace Telemetry.Ingress.API.Features.ApiKeys;
@@ -89,7 +90,7 @@ public class ApiKeyCacheService : IApiKeyCacheService
         }
         catch (RpcException ex)
         {
-            _logger.LogError(ex, "gRPC call to UserManagement failed with status: {Status}", ex.Status); // todo: high-performance logging
+            _logger.LogUserManagementGrpcError(ex.Status, ex);
             throw new UserManagementUnavailableException("UserManagement gRPC service is unavailable.", ex);
         }
     }

@@ -4,7 +4,7 @@ using Telemetry.Contracts.Interfaces;
 
 namespace Telemetry.Contracts.Utils;
 
-public class ApiKeyHasher : IApiKeyHasher
+public sealed class ApiKeyHasher : IApiKeyHasher
 {
     private const int MaxKeyLength = 128;
 

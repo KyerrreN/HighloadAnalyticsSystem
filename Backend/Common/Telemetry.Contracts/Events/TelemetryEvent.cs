@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Telemetry.Contracts.Events;
 
-public record TelemetryEvent(
+public sealed record TelemetryEvent(
     Guid? EventId,
     DateTimeOffset? Timestamp,
 
@@ -39,4 +39,4 @@ public record TelemetryEvent(
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 [JsonSerializable(typeof(TelemetryEvent))]
 [JsonSerializable(typeof(EnvelopedEvent))]
-public partial class IngressJsonContext : JsonSerializerContext { }
+public sealed partial class IngressJsonContext : JsonSerializerContext { }
