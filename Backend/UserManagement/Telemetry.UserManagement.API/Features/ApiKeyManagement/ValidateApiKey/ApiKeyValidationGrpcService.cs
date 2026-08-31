@@ -1,5 +1,6 @@
 ﻿using Grpc.Core;
 using Telemetry.Contracts.Grpc;
+using Telemetry.UserManagement.Infrastructure.Logging;
 
 namespace Telemetry.UserManagement.API.Features.ApiKeyManagement.ValidateApiKey;
 
@@ -20,9 +21,7 @@ public class ApiKeyValidationGrpcService : ApiKeyValidation.ApiKeyValidationBase
 
         if (result.IsFailure)
         {
-            _logger.LogWarning("gRPC API Key validation failed: {ErrorCode} - {ErrorMessage}",
-                result.Error.Code,
-                result.Error.Message); // todo: high-performance logging
+            _logger.LogApiKeyValidationWarning(result.Error.Code, result.Error.Message);
 
             return new ValidateApiKeyResponse
             {

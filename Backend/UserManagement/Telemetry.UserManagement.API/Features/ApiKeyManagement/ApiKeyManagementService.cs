@@ -172,7 +172,7 @@ public class ApiKeyManagementService : IApiKeyManagementService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to validate API key hash."); // todo: high-performance logging
+            _logger.LogApiKeyValidationError(ex);
             return Result.Failed<Guid>(ApiKeyErrors.ValidationFailed);
         }
     }
