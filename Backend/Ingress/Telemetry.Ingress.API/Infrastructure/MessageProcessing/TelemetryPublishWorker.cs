@@ -100,7 +100,7 @@ public class TelemetryPublishWorker(
             EnvelopedEvent? envelope = null;
             try
             {
-                envelope = JsonSerializer.Deserialize<EnvelopedEvent>(value);
+                envelope = JsonSerializer.Deserialize<EnvelopedEvent>(value, TelemetryEventJsonContext.Default.EnvelopedEvent);
             }
             catch (Exception ex)
             {
@@ -162,7 +162,7 @@ public class TelemetryPublishWorker(
 
         try
         {
-            await messageBus.PublishAsync(envelope.Payload, parentContext, envelope.ReceivedAt, stoppingToken);
+            await messageBus.PublishAsync(envelope, parentContext, stoppingToken);
         }
         catch (ProduceException<string, string> ex)
         {

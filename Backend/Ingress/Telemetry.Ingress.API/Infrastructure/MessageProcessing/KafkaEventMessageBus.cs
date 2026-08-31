@@ -55,18 +55,23 @@ public sealed class KafkaEventMessageBus : IEventMessageBus, IDisposable
     /// <returns></returns>
     /// <exception cref="ProduceException{TKey, TValue}"></exception>
     /// <exception cref="Exception"></exception>
-    public async Task PublishAsync(TelemetryEvent @event, ActivityContext traceContext, DateTime receivedAt, CancellationToken cancellationToken)
+    public async Task PublishAsync(EnvelopedEvent envelope, ActivityContext traceContext, CancellationToken cancellationToken)
     {
-        var key = !string.IsNullOrWhiteSpace(@event.SessionId) ? @event.SessionId :
-                  !string.IsNullOrWhiteSpace(@event.ActorId) ? @event.ActorId : @event.EventName;
+        var key = !string.IsNullOrWhiteSpace(envelope.Payload.SessionId) ? envelope.Payload.SessionId :
+                  !string.IsNullOrWhiteSpace(envelope.Payload.ActorId) ? envelope.Payload.ActorId : envelope.Payload.EventName;
 
-        var value = JsonSerializer.Serialize(@event, IngressJsonContext.Default.TelemetryEvent);
+        var value = JsonSerializer.Serialize(envelope, TelemetryEventJsonContext.Default.EnvelopedEvent);
 
         var headers = new Headers();
         var propagationContext = new PropagationContext(traceContext, default);
         Propagators.DefaultTextMapPropagator.Inject(propagationContext, headers, SetHeaders);
 
-        SetHeaders(headers, "receivedat", receivedAt.ToString("O"));
+        if (envelope.TraceParent is not null)
+        {
+            SetHeaders(headers, "traceparent", envelope.TraceParent);
+        }
+
+        SetHeaders(headers, "receivedat", envelope.ReceivedAt.ToString("O"));
 
         var message = new Message<string, string>
         {
