@@ -172,7 +172,7 @@ public class TelemetryPublishWorker(
                 throw;
             }
 
-            logger.LogKafkaMessageRejected(envelope.Payload.EventId.Value, ex);
+            logger.LogKafkaMessageRejected(envelope.Payload.EventId, ex);
 
             metrics.RecordPermanentRejection(ex.Error.Reason);
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
