@@ -12,7 +12,7 @@ using Telemetry.Ingress.API.Infrastructure.Services;
 
 namespace Telemetry.Ingress.API.Infrastructure.MessageProcessing;
 
-public class TelemetryPublishWorker(
+public sealed class TelemetryPublishWorker(
     LocalBufferService buffer,
     IEventMessageBus messageBus,
     ILogger<TelemetryPublishWorker> logger,

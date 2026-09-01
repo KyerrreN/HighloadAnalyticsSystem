@@ -8,7 +8,7 @@ using Telemetry.Contracts.Result;
 
 namespace Telemetry.UserManagement.API.Features.ApiKeyManagement;
 
-public class ApiKeyManagementService : IApiKeyManagementService
+public sealed class ApiKeyManagementService : IApiKeyManagementService
 {
     private readonly AppDbContext _dbContext;
     private readonly TimeProvider _timeProvider;

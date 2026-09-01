@@ -5,7 +5,7 @@ using Telemetry.UserManagement.Infrastructure.Database.Entities;
 
 namespace Telemetry.UserManagement.API.Middlewares;
 
-public class EnsureUserExistsMiddleware
+public sealed class EnsureUserExistsMiddleware
 {
     private readonly RequestDelegate _next;
 

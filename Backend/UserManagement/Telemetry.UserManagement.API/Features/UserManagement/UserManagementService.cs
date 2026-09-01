@@ -6,7 +6,7 @@ using Telemetry.Contracts.Result;
 
 namespace Telemetry.UserManagement.API.Features.UserManagement;
 
-public class UserManagementService : IUserManagementService
+public sealed class UserManagementService : IUserManagementService
 {
     private readonly AppDbContext _dbContext;
     private readonly IKeycloakAdminService _keycloakAdminService;

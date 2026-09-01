@@ -6,7 +6,7 @@ using Telemetry.Ingress.API.Infrastructure.Options;
 
 namespace Telemetry.Ingress.API.Infrastructure.MessageProcessing;
 
-public class SetupKafkaService : IHostedService
+public sealed class SetupKafkaService : IHostedService
 {
     private readonly KafkaOptions _options;
     private readonly ILogger<SetupKafkaService> _logger;

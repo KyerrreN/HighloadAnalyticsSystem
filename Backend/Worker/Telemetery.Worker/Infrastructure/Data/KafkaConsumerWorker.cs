@@ -11,7 +11,7 @@ using Telemetry.Worker.Infrastructure.Options;
 
 namespace Telemetry.Worker.Infrastructure.Data;
 
-public class KafkaConsumerWorker : BackgroundService
+public sealed class KafkaConsumerWorker : BackgroundService
 {
     private readonly KafkaOptions _kafkaOptions;
     private readonly BatchingOptions _batchingOptions;

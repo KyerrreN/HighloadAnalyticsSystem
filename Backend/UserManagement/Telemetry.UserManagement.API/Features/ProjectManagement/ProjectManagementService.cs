@@ -7,7 +7,7 @@ using Telemetry.Contracts.Result;
 
 namespace Telemetry.UserManagement.API.Features.ProjectManagement;
 
-public class ProjectManagementService : IProjectManagementService
+public sealed class ProjectManagementService : IProjectManagementService
 {
     private readonly AppDbContext _dbContext;
     private readonly TimeProvider _timeProvider;

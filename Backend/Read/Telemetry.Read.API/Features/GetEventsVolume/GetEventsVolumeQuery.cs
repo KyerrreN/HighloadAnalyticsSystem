@@ -3,7 +3,7 @@ using Telemetry.Read.Domain.Abstractions.Markers;
 
 namespace Telemetry.Read.API.Features.GetEventsVolume;
 
-public record GetEventsVolumeQuery(
+public sealed record GetEventsVolumeQuery(
     Guid ProjectId,
     DateOnly From,
     DateOnly To,

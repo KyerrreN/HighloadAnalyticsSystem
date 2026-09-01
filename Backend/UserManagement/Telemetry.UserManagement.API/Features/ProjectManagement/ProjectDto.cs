@@ -1,6 +1,6 @@
 ﻿namespace Telemetry.UserManagement.API.Features.ProjectManagement;
 
-public record ProjectDto(
+public sealed record ProjectDto(
     Guid Id,
     string Name,
     string? Description,

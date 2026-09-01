@@ -3,7 +3,7 @@ using Telemetry.Read.Domain.Abstractions;
 
 namespace Telemetry.Read.API.Features.GetDailyMontlyActiveUsers;
 
-public class GetDauMauHandler : IQueryHandler<GetDauMauQuery, List<DauMauResponse>>
+public sealed class GetDauMauHandler : IQueryHandler<GetDauMauQuery, List<DauMauResponse>>
 {
     private readonly TimeProvider _timeProvider;
     private readonly IDauMauDataSource _dataSource;

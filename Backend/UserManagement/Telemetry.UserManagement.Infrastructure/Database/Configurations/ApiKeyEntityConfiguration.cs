@@ -4,7 +4,7 @@ using Telemetry.UserManagement.Infrastructure.Database.Entities;
 
 namespace Telemetry.UserManagement.Infrastructure.Database.Configurations;
 
-public class ApiKeyEntityConfiguration : IEntityTypeConfiguration<ApiKey>
+public sealed class ApiKeyEntityConfiguration : IEntityTypeConfiguration<ApiKey>
 {
     public void Configure(EntityTypeBuilder<ApiKey> builder)
     {

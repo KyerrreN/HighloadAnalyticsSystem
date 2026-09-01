@@ -6,7 +6,7 @@ using Telemetry.Read.Domain.Options;
 
 namespace Telemetry.Read.API.Features.GetEventsVolume.Data;
 
-public class ClickHouseEventsVolumeDataSource : IEventsVolumeDataSource
+public sealed class ClickHouseEventsVolumeDataSource : IEventsVolumeDataSource
 {
     private readonly string _connectionString;
 

@@ -2,7 +2,7 @@
 
 namespace Telemetry.UserManagement.API.Features.ProjectManagement.CreateProject;
 
-public class CreateProjectRequestDtoValidator : AbstractValidator<CreateProjectRequestDto>
+public sealed class CreateProjectRequestDtoValidator : AbstractValidator<CreateProjectRequestDto>
 {
     public CreateProjectRequestDtoValidator()
     {

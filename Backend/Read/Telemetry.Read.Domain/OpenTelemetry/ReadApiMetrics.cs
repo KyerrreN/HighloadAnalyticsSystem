@@ -2,7 +2,7 @@
 
 namespace Telemetry.Read.Domain.OpenTelemetry;
 
-public class ReadApiMetrics
+public sealed class ReadApiMetrics
 {
     public const string MeterName = "Telemetry.Read.Metrics";
 

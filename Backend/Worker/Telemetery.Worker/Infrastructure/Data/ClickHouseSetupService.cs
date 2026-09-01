@@ -7,7 +7,7 @@ using Telemetry.Worker.Infrastructure.Options;
 
 namespace Telemetry.Worker.Infrastructure.Data;
 
-public class ClickHouseSetupService : IHostedService
+public sealed class ClickHouseSetupService : IHostedService
 {
     private readonly ClickHouseOptions _options;
     private readonly ILogger<ClickHouseSetupService> _logger;

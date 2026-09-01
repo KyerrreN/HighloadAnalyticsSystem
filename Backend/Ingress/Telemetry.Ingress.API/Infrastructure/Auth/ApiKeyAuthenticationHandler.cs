@@ -8,7 +8,7 @@ using Telemetry.Ingress.API.Infrastructure.Options;
 
 namespace Telemetry.Ingress.API.Infrastructure.Auth;
 
-public class ApiKeyAuthenticationHandler(
+public sealed class ApiKeyAuthenticationHandler(
     IOptionsMonitor<ApiKeyAuthenticationOptions> options,
     ILoggerFactory logger,
     UrlEncoder encoder,

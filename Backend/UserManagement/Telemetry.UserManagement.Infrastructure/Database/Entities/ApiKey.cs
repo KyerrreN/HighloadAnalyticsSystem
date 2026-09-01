@@ -1,6 +1,6 @@
 ﻿namespace Telemetry.UserManagement.Infrastructure.Database.Entities;
 
-public class ApiKey
+public sealed class ApiKey
 {
     public Guid Id { get; set; }
     public Guid ProjectId { get; set; }

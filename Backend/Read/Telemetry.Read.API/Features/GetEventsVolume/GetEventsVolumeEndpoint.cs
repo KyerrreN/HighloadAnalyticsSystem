@@ -3,7 +3,7 @@ using Telemetry.Read.Domain.Abstractions;
 
 namespace Telemetry.Read.API.Features.GetEventsVolume;
 
-public class GetEventsVolumeEndpoint : IEndpoint
+public sealed class GetEventsVolumeEndpoint : IEndpoint
 {
     public string Version => "1";
 

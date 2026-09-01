@@ -3,7 +3,7 @@ using Telemetry.UserManagement.Infrastructure.Database.Entities;
 
 namespace Telemetry.UserManagement.Infrastructure.Database;
 
-public class AppDbContext : DbContext
+public sealed class AppDbContext : DbContext
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<Project> Projects => Set<Project>();

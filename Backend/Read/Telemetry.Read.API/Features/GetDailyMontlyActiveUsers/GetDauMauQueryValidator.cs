@@ -2,7 +2,7 @@
 
 namespace Telemetry.Read.API.Features.GetDailyMontlyActiveUsers;
 
-public class GetDauMauQueryValidator : AbstractValidator<GetDauMauQuery>
+public sealed class GetDauMauQueryValidator : AbstractValidator<GetDauMauQuery>
 {
     public GetDauMauQueryValidator(TimeProvider timeProvider)
     {

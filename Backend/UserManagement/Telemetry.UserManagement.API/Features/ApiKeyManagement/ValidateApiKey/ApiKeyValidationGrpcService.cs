@@ -4,7 +4,7 @@ using Telemetry.UserManagement.Infrastructure.Logging;
 
 namespace Telemetry.UserManagement.API.Features.ApiKeyManagement.ValidateApiKey;
 
-public class ApiKeyValidationGrpcService : ApiKeyValidation.ApiKeyValidationBase
+public sealed class ApiKeyValidationGrpcService : ApiKeyValidation.ApiKeyValidationBase
 {
     private readonly IApiKeyManagementService _service;
     private readonly ILogger<ApiKeyValidationGrpcService> _logger;

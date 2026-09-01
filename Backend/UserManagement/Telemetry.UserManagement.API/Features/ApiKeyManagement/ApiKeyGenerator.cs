@@ -1,9 +1,8 @@
 ﻿using System.Security.Cryptography;
-using System.Text;
 
 namespace Telemetry.UserManagement.API.Features.ApiKeyManagement;
 
-public class ApiKeyGenerator : IApiKeyGenerator
+public sealed class ApiKeyGenerator : IApiKeyGenerator
 {
     private const string KeyPrefix = "pk_";
 

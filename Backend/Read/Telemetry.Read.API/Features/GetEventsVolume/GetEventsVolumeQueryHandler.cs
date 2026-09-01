@@ -3,7 +3,7 @@ using Telemetry.Read.Domain.Abstractions;
 
 namespace Telemetry.Read.API.Features.GetEventsVolume;
 
-public class GetEventsVolumeQueryHandler(IEventsVolumeDataSource dataSource) : IQueryHandler<GetEventsVolumeQuery, GetEventsVolumeResponse>
+public sealed class GetEventsVolumeQueryHandler(IEventsVolumeDataSource dataSource) : IQueryHandler<GetEventsVolumeQuery, GetEventsVolumeResponse>
 {
     public async Task<GetEventsVolumeResponse> HandleAsync(GetEventsVolumeQuery query, CancellationToken cancellationToken)
     {

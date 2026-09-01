@@ -4,7 +4,7 @@ using Telemetry.UserManagement.Infrastructure.Database.Entities;
 
 namespace Telemetry.UserManagement.Infrastructure.Database.Configurations;
 
-public class ProjectEntityConfiguration : IEntityTypeConfiguration<Project>
+public sealed class ProjectEntityConfiguration : IEntityTypeConfiguration<Project>
 {
     public void Configure(EntityTypeBuilder<Project> builder)
     {

@@ -4,7 +4,7 @@ using Telemetry.Contracts.Constants;
 
 namespace Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 
-public class IngressMetrics : IDisposable
+public sealed class IngressMetrics : IDisposable
 {
     public const string MeterName = "Telemetry.Ingress";
     

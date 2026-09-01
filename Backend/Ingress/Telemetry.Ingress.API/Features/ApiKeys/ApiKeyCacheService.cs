@@ -8,7 +8,7 @@ using ZiggyCreatures.Caching.Fusion;
 
 namespace Telemetry.Ingress.API.Features.ApiKeys;
 
-public class ApiKeyCacheService : IApiKeyCacheService
+public sealed class ApiKeyCacheService : IApiKeyCacheService
 {
     private const int ExpectedApiKeyLength = 67;
     private const string ApiKeyPrefix = "pk_";

@@ -6,7 +6,7 @@ using Telemetry.Read.Domain.Options;
 
 namespace Telemetry.Read.API.Features.GetTopEvents.Data;
 
-public class ClickHouseTopEventsDataSource : ITopEventsDataSource
+public sealed class ClickHouseTopEventsDataSource : ITopEventsDataSource
 {
     private readonly string _connectionString;
 

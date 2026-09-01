@@ -3,7 +3,7 @@ using Telemetry.Read.Domain.Abstractions.Markers;
 
 namespace Telemetry.Read.API.Features.GetDailyMontlyActiveUsers;
 
-public record GetDauMauQuery(Guid ProjectId, DateTime From, DateTime? To) 
+public sealed record GetDauMauQuery(Guid ProjectId, DateTime From, DateTime? To) 
     : IQuery<List<DauMauResponse>>, ICachableQuery
 {
     public string CacheKey => $"dau-mau:{ProjectId}:{From:yyyyMMdd}-{To?.ToString("yyyyMMdd") ?? "now"}";

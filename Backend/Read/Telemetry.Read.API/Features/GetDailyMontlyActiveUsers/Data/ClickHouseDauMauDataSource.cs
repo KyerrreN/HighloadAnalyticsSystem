@@ -6,7 +6,7 @@ using Telemetry.Read.Domain.Options;
 
 namespace Telemetry.Read.API.Features.GetDailyMontlyActiveUsers.Data;
 
-public class ClickHouseDauMauDataSource : IDauMauDataSource
+public sealed class ClickHouseDauMauDataSource : IDauMauDataSource
 {
     private readonly string _connectionString;
 

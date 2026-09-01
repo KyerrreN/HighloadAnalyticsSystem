@@ -5,7 +5,7 @@ using Telemetry.UserManagement.Infrastructure.Database.Options;
 
 namespace Telemetry.UserManagement.API.Factories;
 
-public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
+public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {
     public AppDbContext CreateDbContext(string[] args)
     {

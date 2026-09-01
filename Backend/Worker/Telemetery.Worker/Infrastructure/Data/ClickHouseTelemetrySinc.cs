@@ -11,7 +11,7 @@ using Telemetry.Worker.Infrastructure.Options;
 
 namespace Telemetry.Worker.Infrastructure.Data;
 
-public class ClickHouseTelemetrySinc : ITelemetrySink
+public sealed class ClickHouseTelemetrySinc : ITelemetrySink
 {
     private readonly ClickHouseOptions _options;
 

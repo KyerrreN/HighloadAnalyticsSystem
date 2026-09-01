@@ -1,6 +1,6 @@
 ﻿namespace Telemetry.UserManagement.API.Features.ApiKeyManagement;
 
-public record ApiKeyDto(
+public sealed record ApiKeyDto(
     Guid Id,
     Guid ProjectId,
     string Name,

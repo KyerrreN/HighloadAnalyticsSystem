@@ -2,7 +2,7 @@
 
 namespace Telemetry.Read.API.Features.GetEventsVolume;
 
-public class GetEventsVolumeQueryValidator : AbstractValidator<GetEventsVolumeQuery>
+public sealed class GetEventsVolumeQueryValidator : AbstractValidator<GetEventsVolumeQuery>
 {
     private const int MaxAllowedPoints = 500;
 

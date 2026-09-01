@@ -2,7 +2,7 @@
 
 namespace Telemetry.Read.API.Features.GetTopEvents;
 
-public class GetTopEventsQueryValidator : AbstractValidator<GetTopEventsQuery>
+public sealed class GetTopEventsQueryValidator : AbstractValidator<GetTopEventsQuery>
 {
     public GetTopEventsQueryValidator()
     {
