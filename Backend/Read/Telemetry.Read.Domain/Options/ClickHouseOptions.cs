@@ -2,7 +2,7 @@
 
 namespace Telemetry.Read.Domain.Options;
 
-public class ClickHouseOptions
+public sealed class ClickHouseOptions
 {
     public const string SectionName = "ClickHouse";
 

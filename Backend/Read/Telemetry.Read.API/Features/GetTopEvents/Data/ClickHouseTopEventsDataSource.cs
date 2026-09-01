@@ -1,11 +1,12 @@
 ﻿using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
 using Microsoft.Extensions.Options;
+using Telemetry.Contracts.Constants;
 using Telemetry.Read.Domain.Options;
 
 namespace Telemetry.Read.API.Features.GetTopEvents.Data;
 
-public class ClickHouseTopEventsDataSource : ITopEventsDataSource
+public sealed class ClickHouseTopEventsDataSource : ITopEventsDataSource
 {
     private readonly string _connectionString;
 
@@ -14,24 +15,26 @@ public class ClickHouseTopEventsDataSource : ITopEventsDataSource
         _connectionString = options.Value.ConnectionString;
     }
 
-    public async Task<List<TopEventItem>> GetAsync(string projectApiKey, DateTime from, DateTime to, int limit, CancellationToken ct)
+    public async Task<List<TopEventItem>> GetAsync(Guid projectId, DateTime from, DateTime to, int limit, CancellationToken ct)
     {
         using var connection = new ClickHouseConnection(_connectionString);
         await connection.OpenAsync(ct);
 
         using var command = connection.CreateCommand();
-        command.CommandText = """
-           SELECT EventName, uniqExact(EventId) AS Count
-           FROM telemetry_events
-           WHERE ProjectApiKey = @apiKey 
-           AND Timestamp >= @from 
-           AND Timestamp <= @to
-           GROUP BY EventName
-           ORDER BY Count DESC
-           LIMIT @limit
-           """;
+        command.CommandText = $"""
+            SELECT 
+                {TelemetryEventsTable.EventName}, 
+                uniqExact({TelemetryEventsTable.EventId}) AS Count
+            FROM {TelemetryEventsTable.TableName}
+            WHERE {TelemetryEventsTable.ProjectId} = @projectId 
+                AND {TelemetryEventsTable.Timestamp} >= @from 
+                AND {TelemetryEventsTable.Timestamp} <= @to
+            GROUP BY {TelemetryEventsTable.EventName}
+            ORDER BY Count DESC
+            LIMIT @limit
+            """;
 
-        command.AddParameter("apiKey", projectApiKey);
+        command.AddParameter("projectId", projectId);
         command.AddParameter("from", from);
         command.AddParameter("to", to);
         command.AddParameter("limit", limit);

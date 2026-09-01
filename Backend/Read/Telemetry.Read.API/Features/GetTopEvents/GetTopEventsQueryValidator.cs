@@ -2,11 +2,11 @@
 
 namespace Telemetry.Read.API.Features.GetTopEvents;
 
-public class GetTopEventsQueryValidator : AbstractValidator<GetTopEventsQuery>
+public sealed class GetTopEventsQueryValidator : AbstractValidator<GetTopEventsQuery>
 {
     public GetTopEventsQueryValidator()
     {
-        RuleFor(x => x.ProjectApiKey)
+        RuleFor(x => x.ProjectId)
             .NotEmpty()
             .WithMessage("'{PropertyName}' is required and cannot be empty.");
 

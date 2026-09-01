@@ -1,10 +1,10 @@
 ﻿namespace Telemetry.UserManagement.API.Features.ApiKeyManagement.CreateApiKey;
 
-public record CreateApiKeyRequest(
+public sealed record CreateApiKeyRequest(
     string Name,
     DateTime ExpiresAtUtc);
 
-public record CreateApiKeyResponse(
+public sealed record CreateApiKeyResponse(
     Guid Id,
     Guid ProjectId,
     string Name,

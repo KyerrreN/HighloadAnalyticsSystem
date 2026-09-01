@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-using Telemetry.UserManagement.API.Features.Shared;
-using Telemetry.UserManagement.API.Features.Shared.Utils;
+﻿using Telemetry.UserManagement.API.Features.Shared;
 
 namespace Telemetry.UserManagement.API.Features.ApiKeyManagement.RevokeApiKey;
 

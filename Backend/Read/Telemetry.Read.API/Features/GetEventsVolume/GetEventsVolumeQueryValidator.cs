@@ -2,13 +2,13 @@
 
 namespace Telemetry.Read.API.Features.GetEventsVolume;
 
-public class GetEventsVolumeQueryValidator : AbstractValidator<GetEventsVolumeQuery>
+public sealed class GetEventsVolumeQueryValidator : AbstractValidator<GetEventsVolumeQuery>
 {
     private const int MaxAllowedPoints = 500;
 
     public GetEventsVolumeQueryValidator()
     {
-        RuleFor(x => x.ProjectApiKey)
+        RuleFor(x => x.ProjectId)
             .NotEmpty()
             .WithMessage("'{PropertyName}' is required and cannot be empty.");
 

@@ -2,7 +2,7 @@
 
 namespace Telemetry.UserManagement.API.Features.ApiKeyManagement.CreateApiKey;
 
-public class CreateApiKeyRequestValidator : AbstractValidator<CreateApiKeyRequest>
+public sealed class CreateApiKeyRequestValidator : AbstractValidator<CreateApiKeyRequest>
 {
     public CreateApiKeyRequestValidator(TimeProvider timeProvider)
     {

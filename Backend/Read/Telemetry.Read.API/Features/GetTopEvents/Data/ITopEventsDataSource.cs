@@ -3,7 +3,7 @@
 public interface ITopEventsDataSource
 {
     Task<List<TopEventItem>> GetAsync(
-        string projectApiKey,
+        Guid projectId,
         DateTime from,
         DateTime to,
         int limit,

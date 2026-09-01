@@ -1,16 +1,17 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.Options;
+using System.Globalization;
+using System.Text;
 using System.Text.Json;
-using Telemetry.Worker.Infrastructure.Options;
 using Telemetry.Contracts.Events;
 using Telemetry.Worker.Infrastructure.Data.Interfaces;
 using Telemetry.Worker.Infrastructure.Observability.Logging;
 using Telemetry.Worker.Infrastructure.Observability.Otel;
-using System.Text;
+using Telemetry.Worker.Infrastructure.Options;
 
 namespace Telemetry.Worker.Infrastructure.Data;
 
-public class KafkaConsumerWorker : BackgroundService
+public sealed class KafkaConsumerWorker : BackgroundService
 {
     private readonly KafkaOptions _kafkaOptions;
     private readonly BatchingOptions _batchingOptions;
@@ -54,7 +55,7 @@ public class KafkaConsumerWorker : BackgroundService
         _logger.LogSubscribedToTopic(_kafkaOptions.TopicName);
 
         var batch = new List<EnvelopedEvent>(_batchingOptions.MaxBatchSize);
-        var lastFlushTime = DateTime.UtcNow;
+        var lastFlushTime = _timeProvider.GetUtcNow();
 
         // necessary to not block the thread
         await Task.Yield();
@@ -69,15 +70,17 @@ public class KafkaConsumerWorker : BackgroundService
                 {
                     try
                     {
-                        var telemeteryEvent = JsonSerializer.Deserialize<TelemetryEvent>(consumeResult.Message.Value);
+                        var envelopedEvent = JsonSerializer.Deserialize<EnvelopedEvent>(
+                            consumeResult.Message.Value,
+                            TelemetryEventJsonContext.Default.EnvelopedEvent);
 
-                        if (telemeteryEvent is not null)
+                        if (envelopedEvent is not null)
                         {
-                            string? traceParent = null;
-                            DateTime receivedAt = _timeProvider.GetUtcNow().UtcDateTime;
-
                             if (consumeResult.Message.Headers is not null)
                             {
+                                string? traceParent = envelopedEvent.TraceParent;
+                                DateTime receivedAt = envelopedEvent.ReceivedAt;
+
                                 if (consumeResult.Message.Headers.TryGetLastBytes("traceparent", out var headerBytes))
                                 {
                                     traceParent = Encoding.UTF8.GetString(headerBytes);
@@ -86,14 +89,18 @@ public class KafkaConsumerWorker : BackgroundService
                                 if (consumeResult.Message.Headers.TryGetLastBytes("receivedat", out var receivedAtBytes))
                                 {
                                     var receivedAtStr = Encoding.UTF8.GetString(receivedAtBytes);
-                                    if (DateTime.TryParse(receivedAtStr, out var parsedDate))
+                                    if (DateTimeOffset.TryParse(receivedAtStr, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsedDate))
                                     {
-                                        receivedAt = parsedDate;
+                                        receivedAt = parsedDate.UtcDateTime;
                                     }
                                 }
-                            }
 
-                            var envelopedEvent = new EnvelopedEvent(telemeteryEvent, traceParent, receivedAt);
+                                envelopedEvent = envelopedEvent with
+                                {
+                                    TraceParent = traceParent,
+                                    ReceivedAt = receivedAt
+                                };
+                            }
 
                             batch.Add(envelopedEvent);
                         }
@@ -102,11 +109,16 @@ public class KafkaConsumerWorker : BackgroundService
                     {
                         _metrics.RecordPoisonPill();
                         _logger.LogDeserializationError(ex);
+
+                        consumer.Commit(consumeResult);
+                        // todo: save in a table to show a user a poison pill
+                        // instead of just swallowing it
                     }
                 }
 
+                var now = _timeProvider.GetUtcNow();
                 bool isBatchFull = batch.Count >= _batchingOptions.MaxBatchSize;
-                bool isTimeUp = (DateTime.UtcNow - lastFlushTime) >= _batchingOptions.MaxWaitTime && batch.Count > 0;
+                bool isTimeUp = (now - lastFlushTime) >= _batchingOptions.MaxWaitTime && batch.Count > 0;
 
                 if (isBatchFull || isTimeUp)
                 {
@@ -127,7 +139,7 @@ public class KafkaConsumerWorker : BackgroundService
                             _metrics.RecordBatchSize(batch.Count);
 
                             batch.Clear();
-                            lastFlushTime = DateTime.UtcNow;
+                            lastFlushTime = _timeProvider.GetUtcNow();
                             isBatchSaved = true;
 
                             _logger.LogBatchSaved();

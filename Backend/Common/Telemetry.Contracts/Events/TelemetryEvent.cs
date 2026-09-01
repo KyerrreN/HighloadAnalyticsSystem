@@ -21,6 +21,10 @@ public sealed record TelemetryEvent(
     JsonElement Properties
 )
 {
+    /// <summary>
+    /// Validates properties of <see cref="TelemetryEvent"/>
+    /// </summary>
+    /// <returns><see cref="bool"/> - validation result</returns>
     public bool IsValid()
     {
         if (Properties.ValueKind != JsonValueKind.Object)
@@ -29,6 +33,25 @@ public sealed record TelemetryEvent(
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Ensures that nullable values that HAVE to be filled ARE filled
+    /// </summary>
+    /// <param name="timeProvider">Time provider</param>
+    /// <returns>A current instance of <see cref="TelemetryEvent"/></returns>
+    public TelemetryEvent EnsureDefaults(TimeProvider timeProvider)
+    {
+        if (EventId.HasValue && Timestamp.HasValue)
+        {
+            return this;
+        }
+
+        return this with
+        {
+            EventId = EventId ?? Ulid.NewUlid().ToGuid(),
+            Timestamp = Timestamp ?? timeProvider.GetUtcNow()
+        };
     }
 }
 
@@ -39,4 +62,4 @@ public sealed record TelemetryEvent(
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 [JsonSerializable(typeof(TelemetryEvent))]
 [JsonSerializable(typeof(EnvelopedEvent))]
-public sealed partial class IngressJsonContext : JsonSerializerContext { }
+public sealed partial class TelemetryEventJsonContext : JsonSerializerContext { }

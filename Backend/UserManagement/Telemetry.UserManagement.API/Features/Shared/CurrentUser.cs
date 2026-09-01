@@ -2,7 +2,7 @@
 
 namespace Telemetry.UserManagement.API.Features.Shared;
 
-public record CurrentUser(Guid Id)
+public sealed record CurrentUser(Guid Id)
 {
     public static ValueTask<CurrentUser?> BindAsync(HttpContext context)
     {

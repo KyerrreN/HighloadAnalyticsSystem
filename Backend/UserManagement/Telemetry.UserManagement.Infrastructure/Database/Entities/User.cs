@@ -1,6 +1,6 @@
 ﻿namespace Telemetry.UserManagement.Infrastructure.Database.Entities;
 
-public class User
+public sealed class User
 {
     public Guid Id { get; set; }
     public DateTime CreatedAtUtc { get; set; }

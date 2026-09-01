@@ -1,3 +1,3 @@
 ﻿namespace Telemetry.Read.API.Features.GetDailyMontlyActiveUsers;
 
-public record DauMauResponse(DateTime Date, long UniqueUsers);
+public sealed record DauMauResponse(DateTime Date, long UniqueUsers);

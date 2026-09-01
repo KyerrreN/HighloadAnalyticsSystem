@@ -3,7 +3,7 @@
 public interface IDauMauDataSource
 {
     Task<Dictionary<DateTime, long>> GetSparseDataAsync(
-        string projectApiKey,
+        Guid projectId,
         DateTime from,
         DateTime to,
         CancellationToken cancellationToken);

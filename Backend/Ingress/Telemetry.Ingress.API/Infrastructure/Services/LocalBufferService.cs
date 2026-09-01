@@ -5,7 +5,7 @@ namespace Telemetry.Ingress.API.Infrastructure.Services;
 /// <summary>
 /// A class that provides local buffer functionality for storing messages. <br/> Uses RocksDb
 /// </summary>
-public class LocalBufferService : IDisposable
+public sealed class LocalBufferService : IDisposable
 {
     private readonly RocksDb _db;
     private readonly WriteOptions _writeOptions;

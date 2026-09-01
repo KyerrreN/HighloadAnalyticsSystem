@@ -37,7 +37,7 @@ public interface IKeycloakApi
         CancellationToken ct = default);
 }
 
-public record KeycloakTokenRequest
+public sealed record KeycloakTokenRequest
 {
     [AliasAs("grant_type")]
     public string GrantType { get; init; } = "client_credentials";
@@ -49,4 +49,4 @@ public record KeycloakTokenRequest
     public required string ClientSecret { get; init; }
 }
 
-public record KeycloakTokenResponse([property: JsonPropertyName("access_token")] string AccessToken);
+public sealed record KeycloakTokenResponse([property: JsonPropertyName("access_token")] string AccessToken);

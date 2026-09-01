@@ -1,11 +1,11 @@
 ﻿namespace Telemetry.UserManagement.API.Features.ProjectManagement.CreateProject;
 
-public record CreateProjectRequestDto(
+public sealed record CreateProjectRequestDto(
     string Name,
     string? Description
 );
 
-public record CreateProjectResponseDto(
+public sealed record CreateProjectResponseDto(
     Guid Id,
     string Name,
     string? Description,

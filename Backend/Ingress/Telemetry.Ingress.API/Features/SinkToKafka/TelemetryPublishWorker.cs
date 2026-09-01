@@ -10,9 +10,9 @@ using Telemetry.Ingress.API.Infrastructure.Observability.HighPerformanceLogging;
 using Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 using Telemetry.Ingress.API.Infrastructure.Services;
 
-namespace Telemetry.Ingress.API.Infrastructure.MessageProcessing;
+namespace Telemetry.Ingress.API.Features.SinkToKafka;
 
-public class TelemetryPublishWorker(
+public sealed class TelemetryPublishWorker(
     LocalBufferService buffer,
     IEventMessageBus messageBus,
     ILogger<TelemetryPublishWorker> logger,
@@ -100,7 +100,7 @@ public class TelemetryPublishWorker(
             EnvelopedEvent? envelope = null;
             try
             {
-                envelope = JsonSerializer.Deserialize<EnvelopedEvent>(value);
+                envelope = JsonSerializer.Deserialize<EnvelopedEvent>(value, TelemetryEventJsonContext.Default.EnvelopedEvent);
             }
             catch (Exception ex)
             {
@@ -162,7 +162,7 @@ public class TelemetryPublishWorker(
 
         try
         {
-            await messageBus.PublishAsync(envelope.Payload, parentContext, envelope.ReceivedAt, stoppingToken);
+            await messageBus.PublishAsync(envelope, parentContext, stoppingToken);
         }
         catch (ProduceException<string, string> ex)
         {
@@ -172,7 +172,7 @@ public class TelemetryPublishWorker(
                 throw;
             }
 
-            logger.LogKafkaMessageRejected(envelope.Payload.EventId.Value, ex);
+            logger.LogKafkaMessageRejected(envelope.Payload.EventId, ex);
 
             metrics.RecordPermanentRejection(ex.Error.Reason);
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);

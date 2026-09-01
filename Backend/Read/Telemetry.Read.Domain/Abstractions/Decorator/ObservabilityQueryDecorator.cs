@@ -1,13 +1,10 @@
 ﻿using System.Diagnostics;
-using Telemetry.Contracts.Constants;
 using Telemetry.Read.Domain.Abstractions.Enrichers;
-using Telemetry.Read.Domain.Abstractions.Markers;
 using Telemetry.Read.Domain.OpenTelemetry;
-using Telemetry.Read.Domain.Utils;
 
 namespace Telemetry.Read.Domain.Abstractions.Decorator;
 
-public class ObservabilityQueryDecorator<TQuery, TResponse> : IQueryHandler<TQuery, TResponse>
+public sealed class ObservabilityQueryDecorator<TQuery, TResponse> : IQueryHandler<TQuery, TResponse>
     where TQuery : IQuery<TResponse>
 {
     private static readonly ActivitySource _activitySource = new(OtelConstants.ActivitySourceName);

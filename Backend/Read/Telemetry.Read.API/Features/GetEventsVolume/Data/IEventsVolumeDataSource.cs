@@ -3,7 +3,7 @@
 public interface IEventsVolumeDataSource
 {
     Task<Dictionary<DateTime, long>> GetAsync(
-        string projectApiKey,
+        Guid projectId,
         DateTime from,
         DateTime to,
         EventGranularityEnum granularity,

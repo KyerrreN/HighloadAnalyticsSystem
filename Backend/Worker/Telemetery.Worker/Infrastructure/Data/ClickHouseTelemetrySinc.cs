@@ -11,7 +11,7 @@ using Telemetry.Worker.Infrastructure.Options;
 
 namespace Telemetry.Worker.Infrastructure.Data;
 
-public class ClickHouseTelemetrySinc : ITelemetrySink
+public sealed class ClickHouseTelemetrySinc : ITelemetrySink
 {
     private readonly ClickHouseOptions _options;
 
@@ -24,10 +24,14 @@ public class ClickHouseTelemetrySinc : ITelemetrySink
 
     public async Task SaveBatchAsync(IReadOnlyCollection<EnvelopedEvent> events, CancellationToken cancellationToken)
     {
-        var links = events
-            .Where(x => !string.IsNullOrEmpty(x.TraceParent))
-            .Select(x => new ActivityLink(ActivityContext.Parse(x.TraceParent!, null)))
-            .ToList();
+        var links = new List<ActivityLink>();
+        foreach (var x in events)
+        {
+            if (!string.IsNullOrEmpty(x.TraceParent) && ActivityContext.TryParse(x.TraceParent, null, out var context))
+            {
+                links.Add(new ActivityLink(context));
+            }
+        }
 
         using var activity = _activitySource.StartActivity(
             "ClickHouse Bulk Insert",
@@ -43,14 +47,17 @@ public class ClickHouseTelemetrySinc : ITelemetrySink
 
         var rows = events.Select(e => new object[]
         {
-            e.Payload.ProjectApiKey,
-            e.Payload.Timestamp,
-            e.ReceivedAt,
-            e.Payload.EventId.ToString(),
+            e.ProjectId,
+            e.Payload.EventId ?? Guid.NewGuid(),
             e.Payload.EventName,
-            e.Payload.ActorId ?? "",
-            e.Payload.SessionId ?? "",
-            e.Payload.Properties.ValueKind != JsonValueKind.Undefined ? e.Payload.Properties.GetRawText() : "{}"
+            (e.Payload.Timestamp ?? e.ReceivedAt).UtcDateTime,
+            e.ReceivedAt,
+            (object?)e.Payload.ActorId ?? DBNull.Value,
+            (object?)e.Payload.SessionId ?? DBNull.Value,
+            e.Payload.Properties.ValueKind is not JsonValueKind.Undefined and not JsonValueKind.Null
+                ? e.Payload.Properties.GetRawText()
+                : "{}",
+            (object?)e.TraceParent ?? DBNull.Value
         }).ToList();
 
         using var connection = new ClickHouseConnection(_options.ConnectionString);
@@ -60,6 +67,7 @@ public class ClickHouseTelemetrySinc : ITelemetrySink
         {
             DestinationTableName = _options.TableName,
             BatchSize = events.Count,
+            ColumnNames = TelemetryEventsTable.ColumnNames,
         };
 
         await bulkCopy.InitAsync();

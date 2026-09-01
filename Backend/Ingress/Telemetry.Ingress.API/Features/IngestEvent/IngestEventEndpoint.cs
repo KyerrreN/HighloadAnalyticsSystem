@@ -35,18 +35,20 @@ public static class IngestEventEndpoint
                     return Results.Unauthorized();
                 }
 
+                var payload = requestBody.EnsureDefaults(timeProvider);
+
                 string? traceParent = Activity.Current?.Id;
                 var receivedAt = timeProvider.GetUtcNow().UtcDateTime;
 
                 var envelope = new EnvelopedEvent(
                     ProjectId: projectId,
-                    Payload: requestBody,
+                    Payload: payload,
                     TraceParent: traceParent,
                     ReceivedAt: receivedAt
                 );
 
                 var key = Ulid.NewUlid().ToByteArray();
-                var value = JsonSerializer.SerializeToUtf8Bytes(envelope, IngressJsonContext.Default.EnvelopedEvent);
+                var value = JsonSerializer.SerializeToUtf8Bytes(envelope, TelemetryEventJsonContext.Default.EnvelopedEvent);
 
                 using (var activity = ActivitySource.StartActivity("RocksDB Put", ActivityKind.Internal))
                 {

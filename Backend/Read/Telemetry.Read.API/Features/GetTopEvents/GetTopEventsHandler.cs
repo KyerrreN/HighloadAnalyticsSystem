@@ -3,7 +3,7 @@ using Telemetry.Read.Domain.Abstractions;
 
 namespace Telemetry.Read.API.Features.GetTopEvents;
 
-public class GetTopEventsHandler(ITopEventsDataSource dataSource, TimeProvider timeProvider) : IQueryHandler<GetTopEventsQuery, GetTopEventsResponse>
+public sealed class GetTopEventsHandler(ITopEventsDataSource dataSource, TimeProvider timeProvider) : IQueryHandler<GetTopEventsQuery, GetTopEventsResponse>
 {
     public async Task<GetTopEventsResponse> HandleAsync(GetTopEventsQuery query, CancellationToken cancellationToken)
     {
@@ -23,7 +23,7 @@ public class GetTopEventsHandler(ITopEventsDataSource dataSource, TimeProvider t
         DateTime dbFrom = from.ToDateTime(TimeOnly.MinValue);
         DateTime dbTo = to.ToDateTime(TimeOnly.MaxValue);
 
-        var data = await dataSource.GetAsync(query.ProjectApiKey, dbFrom, dbTo, query.Limit, cancellationToken);
+        var data = await dataSource.GetAsync(query.ProjectId, dbFrom, dbTo, query.Limit, cancellationToken);
 
         return new GetTopEventsResponse(data);
     }

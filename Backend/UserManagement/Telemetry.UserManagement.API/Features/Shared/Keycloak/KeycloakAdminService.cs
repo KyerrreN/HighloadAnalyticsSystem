@@ -7,7 +7,7 @@ using Telemetry.UserManagement.Infrastructure.Errors;
 
 namespace Telemetry.UserManagement.API.Features.Shared.Keycloak;
 
-public class KeycloakAdminService : IKeycloakAdminService
+public sealed class KeycloakAdminService : IKeycloakAdminService
 {
     private readonly IKeycloakApi _api;
     private readonly KeycloakOptions _options;

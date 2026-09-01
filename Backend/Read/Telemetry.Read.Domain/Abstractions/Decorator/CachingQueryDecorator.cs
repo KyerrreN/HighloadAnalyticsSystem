@@ -7,7 +7,7 @@ using Telemetry.Read.Domain.OpenTelemetry;
 
 namespace Telemetry.Read.Domain.Abstractions.Decorator;
 
-public class CachingQueryDecorator<TQuery, TResponse> : IQueryHandler<TQuery, TResponse>
+public sealed class CachingQueryDecorator<TQuery, TResponse> : IQueryHandler<TQuery, TResponse>
     where TQuery : IQuery<TResponse>
 {
     private readonly IQueryHandler<TQuery, TResponse> _inner;

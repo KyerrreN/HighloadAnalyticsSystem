@@ -1,12 +1,13 @@
 ﻿using ClickHouse.Client.ADO;
 using Microsoft.Extensions.Options;
 using System.Data.Common;
+using Telemetry.Contracts.Constants;
 using Telemetry.Worker.Infrastructure.Observability.Logging;
 using Telemetry.Worker.Infrastructure.Options;
 
 namespace Telemetry.Worker.Infrastructure.Data;
 
-public class ClickHouseSetupService : IHostedService
+public sealed class ClickHouseSetupService : IHostedService
 {
     private readonly ClickHouseOptions _options;
     private readonly ILogger<ClickHouseSetupService> _logger;
@@ -33,18 +34,19 @@ public class ClickHouseSetupService : IHostedService
             command.CommandText = $@"
                 CREATE TABLE IF NOT EXISTS {_options.TableName}
                 (
-                    ProjectApiKey String,
-                    Timestamp DateTime64(3, 'UTC'),
-                    ReceivedAt DateTime64(3, 'UTC'),
-                    EventId UUID,
-                    EventName String,
-                    ActorId String,
-                    SessionId String,
-                    Properties String
+                    {TelemetryEventsTable.ProjectId} UUID,
+                    {TelemetryEventsTable.EventId} UUID,
+                    {TelemetryEventsTable.EventName} String,
+                    {TelemetryEventsTable.Timestamp} DateTime64(3, 'UTC'),
+                    {TelemetryEventsTable.ReceivedAt} DateTime64(3, 'UTC'),
+                    {TelemetryEventsTable.ActorId} Nullable(String),
+                    {TelemetryEventsTable.SessionId} Nullable(String),
+                    {TelemetryEventsTable.Properties} String,
+                    {TelemetryEventsTable.TraceParent} Nullable(String)
                 )
                 ENGINE = ReplacingMergeTree()
-                PARTITION BY toMonday(ReceivedAt) 
-                ORDER BY (ProjectApiKey, EventName, Timestamp, EventId);
+                PARTITION BY toMonday({TelemetryEventsTable.ReceivedAt})
+                ORDER BY ({TelemetryEventsTable.ProjectId}, {TelemetryEventsTable.EventName}, {TelemetryEventsTable.Timestamp}, {TelemetryEventsTable.EventId});
             ";
 
             await command.ExecuteNonQueryAsync(cancellationToken);

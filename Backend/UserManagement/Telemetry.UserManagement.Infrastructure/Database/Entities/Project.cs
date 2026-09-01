@@ -1,6 +1,6 @@
 ﻿namespace Telemetry.UserManagement.Infrastructure.Database.Entities;
 
-public class Project
+public sealed class Project
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
