@@ -10,7 +10,7 @@ using Telemetry.Ingress.API.Infrastructure.Observability.HighPerformanceLogging;
 using Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 using Telemetry.Ingress.API.Infrastructure.Services;
 
-namespace Telemetry.Ingress.API.Infrastructure.MessageProcessing;
+namespace Telemetry.Ingress.API.Features.SinkToKafka;
 
 public sealed class TelemetryPublishWorker(
     LocalBufferService buffer,

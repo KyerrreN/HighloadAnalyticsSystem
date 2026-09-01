@@ -10,7 +10,7 @@ using Telemetry.Ingress.API.Infrastructure.Logging;
 using Telemetry.Ingress.API.Infrastructure.Observability.Otel;
 using Telemetry.Ingress.API.Infrastructure.Options;
 
-namespace Telemetry.Ingress.API.Infrastructure.MessageProcessing;
+namespace Telemetry.Ingress.API.Features.SinkToKafka;
 
 public sealed class KafkaEventMessageBus : IEventMessageBus, IDisposable
 {
