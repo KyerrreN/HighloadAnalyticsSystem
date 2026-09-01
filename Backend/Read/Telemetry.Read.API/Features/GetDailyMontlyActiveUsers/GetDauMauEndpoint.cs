@@ -20,6 +20,7 @@ public class GetDauMauEndpoint : IEndpoint
 
             return Results.Ok(result);
         })
+            .RequireAuthorization()
             .WithName("GetDailyActiveUsers");
     }
 }
