@@ -20,6 +20,7 @@ public class GetTopEventsEndpoint : IEndpoint
 
             return Results.Ok(result);
         })
+            .RequireAuthorization()
             .WithName("GetTopEventsInPeriod");
     }
 }

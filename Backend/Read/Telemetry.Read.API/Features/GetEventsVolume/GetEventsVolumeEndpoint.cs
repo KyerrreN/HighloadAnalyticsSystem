@@ -20,6 +20,7 @@ public sealed class GetEventsVolumeEndpoint : IEndpoint
 
             return Results.Ok(result);
         })
+            .RequireAuthorization()
             .WithName("GetEventsVolume");
     }
 }
