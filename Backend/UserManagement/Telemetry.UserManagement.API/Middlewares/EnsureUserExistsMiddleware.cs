@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Telemetry.UserManagement.API.Features.Shared.Utils;
+using Telemetry.Contracts.Utils;
 using Telemetry.UserManagement.Infrastructure.Database;
 using Telemetry.UserManagement.Infrastructure.Database.Entities;
 

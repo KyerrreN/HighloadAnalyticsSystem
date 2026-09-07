@@ -10,6 +10,7 @@
     <PackageReference Include="ClickHouse.Client" Version="7.14.0" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageReference Include="Grpc.Net.ClientFactory" Version="2.83.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.11" />
     <PackageReference Include="Scrutor" Version="7.0.0" />
   </ItemGroup>
@@ -18,6 +19,10 @@
     <ProjectReference Include="..\..\Common\Telemetry.Contracts\Telemetry.Contracts.csproj" />
     <ProjectReference Include="..\..\Common\Telemetry.Shared.Caching\Telemetry.Shared.Caching.csproj" />
     <ProjectReference Include="..\..\Common\Telemetry.Shared.Observability\Telemetry.Shared.Observability.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Logging\" />
   </ItemGroup>
 
 </Project>

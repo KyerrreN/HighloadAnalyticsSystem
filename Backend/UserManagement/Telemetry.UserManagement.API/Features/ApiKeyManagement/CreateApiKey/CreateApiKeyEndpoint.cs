@@ -1,7 +1,5 @@
 ﻿using FluentValidation;
-using System.Security.Claims;
 using Telemetry.UserManagement.API.Features.Shared;
-using Telemetry.UserManagement.API.Features.Shared.Utils;
 
 namespace Telemetry.UserManagement.API.Features.ApiKeyManagement.CreateApiKey;
 

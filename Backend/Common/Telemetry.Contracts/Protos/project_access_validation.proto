@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option csharp_namespace = "Telemetry.Contracts.Grpc";
+
+package telemetry.v1;
+
+service ProjectAccess {
+	rpc CheckProjectAccess (CheckProjectAccessRequest) returns (CheckProjectAccessResponse);
+}
+
+message CheckProjectAccessRequest {
+	string user_id = 1;
+	string project_id = 2;
+}
+
+message CheckProjectAccessResponse {
+	bool has_access = 1;
+}

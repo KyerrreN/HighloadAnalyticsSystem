@@ -1,4 +1,4 @@
-﻿using Telemetry.UserManagement.API.Features.Shared.Utils;
+﻿using Telemetry.Contracts.Utils;
 
 namespace Telemetry.UserManagement.API.Features.Shared;
 
