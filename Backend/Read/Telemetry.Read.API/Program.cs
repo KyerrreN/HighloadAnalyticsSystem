@@ -1,11 +1,12 @@
 using Telemetry.Read.API.Infrastructure.Extensions;
 using Telemetry.Read.API.Infrastructure.Observability;
+using Telemetry.Shared.Caching;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.ConfigureSwagger();
 builder.Services.RegisterOptions(builder.Configuration);
-builder.Services.AddDistributedMemoryCache();
+builder.Services.AddHybridCaching(builder.Configuration);
 builder.Services.ConfigureAuthentication(builder.Configuration);
 builder.Services.AddAuthorization();
 

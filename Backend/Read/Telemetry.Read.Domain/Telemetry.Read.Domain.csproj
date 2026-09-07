@@ -11,12 +11,13 @@
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.11" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.8" />
     <PackageReference Include="Scrutor" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Common\Telemetry.Contracts\Telemetry.Contracts.csproj" />
+    <ProjectReference Include="..\..\Common\Telemetry.Shared.Caching\Telemetry.Shared.Caching.csproj" />
+    <ProjectReference Include="..\..\Common\Telemetry.Shared.Observability\Telemetry.Shared.Observability.csproj" />
   </ItemGroup>
 
 </Project>
