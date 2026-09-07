@@ -3,11 +3,12 @@ using Telemetry.Ingress.API.Infrastructure.DependencyInjectionExtensions;
 using Telemetry.Ingress.API.Infrastructure.Endpoints;
 using Telemetry.Ingress.API.Infrastructure.Exceptions;
 using Telemetry.Ingress.API.Infrastructure.Observability.Otel;
+using Telemetry.Shared.Caching;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.ConfigureSwagger();
-builder.Services.ConfigureCaching(builder.Configuration);
+builder.Services.AddHybridCaching(builder.Configuration);
 builder.Services.ConfigureGrpc(builder.Configuration);
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

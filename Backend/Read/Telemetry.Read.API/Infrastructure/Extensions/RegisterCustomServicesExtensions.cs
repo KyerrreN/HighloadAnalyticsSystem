@@ -1,6 +1,6 @@
-﻿using Telemetry.Read.API.Features.GetDailyMontlyActiveUsers.Data;
-using Telemetry.Read.API.Features.GetEventsVolume.Data;
-using Telemetry.Read.API.Features.GetTopEvents.Data;
+﻿using Telemetry.Read.API.Features.Analytics.GetDailyMontlyActiveUsers.Data;
+using Telemetry.Read.API.Features.Analytics.GetEventsVolume.Data;
+using Telemetry.Read.API.Features.Analytics.GetTopEvents.Data;
 
 namespace Telemetry.Read.API.Infrastructure.Extensions;
 

@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Common/">
     <Project Path="Common/Telemetry.Contracts/Telemetry.Contracts.csproj" />
+    <Project Path="Common/Telemetry.Shared.Caching/Telemetry.Shared.Caching.csproj" Id="a2f594d1-db04-4b94-80ef-5e9faf9333cb" />
     <Project Path="Common/Telemetry.Shared.Observability/Telemetry.Shared.Observability.csproj" Id="3f7b854d-9db3-4643-baee-7920b0a30766" />
   </Folder>
   <Folder Name="/Ingress/">

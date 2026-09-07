@@ -13,6 +13,11 @@ public static class OptionsExtensions
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
 
+            services.AddOptions<KeycloakOptions>()
+                .BindConfiguration(KeycloakOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
             return services;
         }
     }
