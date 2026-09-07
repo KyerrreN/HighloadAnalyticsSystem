@@ -1,4 +1,5 @@
 ﻿using Telemetry.Ingress.API.Infrastructure.Options;
+using Telemetry.Shared.Caching.Options;
 
 namespace Telemetry.Ingress.API.Infrastructure.DependencyInjectionExtensions;
 

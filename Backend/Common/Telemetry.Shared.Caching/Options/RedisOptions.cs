@@ -1,13 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Telemetry.Ingress.API.Infrastructure.Options;
+namespace Telemetry.Shared.Caching.Options;
 
 public sealed class RedisOptions
 {
     public const string SectionName = "Redis";
 
     [Required(AllowEmptyStrings = false, ErrorMessage = "Redis ConnectionString is required.")]
-    public string ConnectionString { get; set; } = string.Empty;
+    public required string ConnectionString { get; set; }
 
-    public string InstanceName { get; set; } = "IngressCache:";
+    public required string InstanceName { get; set; }
 }

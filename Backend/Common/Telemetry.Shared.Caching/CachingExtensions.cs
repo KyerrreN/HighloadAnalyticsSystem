@@ -1,20 +1,25 @@
-﻿using Telemetry.Ingress.API.Infrastructure.Options;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Telemetry.Shared.Caching.Options;
 using ZiggyCreatures.Caching.Fusion;
 using ZiggyCreatures.Caching.Fusion.Backplane.StackExchangeRedis;
 using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 
-namespace Telemetry.Ingress.API.Infrastructure.DependencyInjectionExtensions;
+namespace Telemetry.Shared.Caching;
 
-public static class CacheExtensions
+public static class CachingExtensions
 {
     extension (IServiceCollection services)
     {
-        public IServiceCollection ConfigureCaching(IConfiguration configuration)
+        public IServiceCollection AddHybridCaching(IConfiguration configuration)
         {
-            var redisOptions = configuration.GetSection(RedisOptions.SectionName).Get<RedisOptions>()
-                            ?? new RedisOptions();
-            var cacheOptions = configuration.GetSection(CacheOptions.SectionName).Get<CacheOptions>()
-                ?? new CacheOptions();
+            var redisOptions = configuration
+                .GetRequiredSection(RedisOptions.SectionName)
+                .Get<RedisOptions>()!;
+
+            var cacheOptions = configuration
+                .GetRequiredSection(CacheOptions.SectionName)
+                .Get<CacheOptions>()!;
 
             // L1
             services.AddMemoryCache(opt =>
